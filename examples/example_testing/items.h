@@ -13,6 +13,7 @@ namespace example
   static void ShowSequenceTable(bool* p_open);
   static void ShowGenericTable(bool* p_open);
   static void ShowTableFilterPopup(const char* popuop_id);
+  static void ShowFileBrowser(bool* p_open);  
 
   static void ShowAppWindow()
   {
@@ -39,6 +40,8 @@ namespace example
     static bool show_generic_table = true;
     if (show_generic_table) ShowGenericTable(&show_generic_table);
 
+    static bool show_file_browser = true;
+    if(show_file_browser) ShowFileBrowser(&show_file_browser);
     
 
     if (ImGui::BeginMainMenuBar())
@@ -84,14 +87,15 @@ namespace example
 
   static void ShowMenuFile()
   {
+
     ImGui::MenuItem("Main menu", NULL, false, false);
     if (ImGui::MenuItem("New"))
     {
-      //TODO
+      //TODO: SQL light interface
     }
-    if (ImGui::MenuItem("Open", "Ctrl+O")) 
+    if (ImGui::MenuItem("Open...", "Ctrl+O")) 
     {
-      //TODO
+      //TODO: File browser modal
     }
     if (ImGui::BeginMenu("Open Recent"))
     {
@@ -107,7 +111,7 @@ namespace example
     }
     if (ImGui::MenuItem("Save As.."))
     {
-      //TODO: open save as modal
+      //TODO: open save as File browser modal
     }
     ImGui::Separator();
     if (ImGui::BeginMenu("Import ..."))
@@ -131,6 +135,11 @@ namespace example
     if (ImGui::Begin("Sequence list", p_open, NULL))
     {
       // left
+
+      // TODO add ability to search by:
+      // - sample_name
+      // - sequence_group_name
+      // - sample_group_name
       static int selected = 0;
       ImGui::BeginChild("left pane", ImVec2(150, 0), true);
       for (int i = 0; i < 100; i++)
@@ -157,6 +166,7 @@ namespace example
     }
     ImGui::End();
   }  
+
   static void ShowGenericTable(bool* p_open)
   {
     //TODO: add input for columns and tables (i.e., std::map)
@@ -243,7 +253,125 @@ namespace example
       }
       ImGui::EndPopup();
     }
+  }  
 
-  }
+  static void ShowFileBrowser(bool* p_open)
+  {
+    ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
+    if (ImGui::Begin("File Browser", p_open, NULL))
+    {
+      // top: up level, current directory string, refresh icon, search
+      // ImGui::BeginChild("Top");
+      if (ImGui::Button("Up"))
+      {
+        // up one directory
+      }
+      ImGui::SameLine();      
+      static char bufdirname[64] = "path/to/current/dir";
+      ImGui::InputText("", bufdirname, 64);
+      ImGui::SameLine(); 
+      if (ImGui::Button("Refresh"))
+      {
+        // Refresh right panel and search
+      }
+      ImGui::SameLine();  
+      static ImGuiTextFilter filter;
+      filter.Draw();
+      // ImGui::EndChild();
+      ImGui::Separator();
+
+      // left: current directory folders (recursive tree)
+      static int selected_dir = 0;
+      ImGui::BeginChild("Directories", ImVec2(120, 0), true);
+      for (int i = 0; i < 10; i++)
+      {
+        char label[128];
+        sprintf(label, "MyObject %d", i);
+        if (ImGui::Selectable(label, selected_dir == i))
+          selected_dir = i;
+      }
+      ImGui::EndChild();
+      ImGui::SameLine();
+
+      // right: files/folders in highlighted directory
+      ImGui::BeginChild("Current Directory");      
+      // headers
+      const char* columns[] = {"Name", "Date Modified", "Type", "Size"};
+      ImGui::Columns(IM_ARRAYSIZE(columns), "mycolumns", true); // 4-ways, with border
+      ImGui::Separator();
+      for (int col = 0; col < IM_ARRAYSIZE(columns); ++col)
+      {
+        ImGui::Text(columns[col]);
+        ImGui::NextColumn();
+      }
+      // Body
+      ImGui::Separator();
+      const char* current_dir_names[] = { "file1", "file2", "file3" };
+      const char* date_modified[] = { "04/15/2018 2:00 PM", "04/15/2018 2:00 PM", "04/15/2018 2:00 PM" };
+      const char* type[] = { ".csv", ".txt", ".mzML" };
+      const char* size[] = { "1MB", "2MB", "3MB" };
+      static int selected_file = -1;
+      for (int i = 0; i < IM_ARRAYSIZE(current_dir_names); i++)
+      {
+        if (filter.PassFilter(current_dir_names[i]))
+        {
+          char label[64];
+          sprintf(label, current_dir_names[i]);
+          if (ImGui::Selectable(label, selected_file == i, ImGuiSelectableFlags_SpanAllColumns))
+              selected_file = i;
+          bool hovered = ImGui::IsItemHovered();
+          ImGui::NextColumn();
+          ImGui::Text(date_modified[i]); ImGui::NextColumn();
+          ImGui::Text(type[i]); ImGui::NextColumn();
+          ImGui::Text(size[i]); ImGui::NextColumn();
+        }
+      }
+      ImGui::EndChild();
+
+      // bottom: selectd filename, filetypes, open/cancel
+      ImGui::BeginGroup();
+      // Filtering and selecting
+      ImGui::Separator();
+      ImGui::Text("File Name:");
+      ImGui::SameLine();
+      static char buffilename[64] = "file_name";
+      ImGui::InputText("", buffilename, 64);
+      ImGui::SameLine();            
+      const char* file_types[] = { ".csv", ".txt", ".mzML", "." };
+      if (ImGui::BeginMenu("File Type"))
+      {
+        for (int i = 0; i < IM_ARRAYSIZE(file_types); i++)
+        {
+          ImGui::MenuItem(file_types[i]);
+        }
+        // ImGui::SameLine(); //TODO: display selected filetype
+        // ImGui::Text(file_types[i]);
+        ImGui::EndMenu();
+      }
+      if (ImGui::Button("Accept"))
+      {
+        // TODO read in the file
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("Cancel"))
+      {
+        // TODO close the modal
+      }
+      ImGui::EndGroup();
+    }
+    ImGui::End();
+  }  
+
+  // Show plotting widget
+  // Provide filters for the following:
+  // - sample_name, sequence_group_name, sample_group_name
+  // - component_name, component_group_name
+  // - sample status: Pass, Warn, Fail
+  // Provide a scatter plot with the following
+  // - chromatographic points in blue
+  // - integrated points in red
+  // Bonus:
+  // - allows users to click points include/exclude
+  //   from the peak
 }
 #endif

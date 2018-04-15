@@ -5,6 +5,11 @@
 #include "imgui.h"
 #include <stdio.h> // vsnprintf, sscanf, printf
 
+// TODO:
+// refactor each widget into its own class
+// parameterize each widget class with attributes that define the contents of the widget
+// add widget for the plotting element (protoype using the lines plots in demo)
+
 namespace example
 {
   static void ShowAppWindow();

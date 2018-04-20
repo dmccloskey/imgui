@@ -15,10 +15,10 @@ namespace example
   static void ShowAppWindow();
   static void ShowAppMainMenuBar();
   static void ShowMenuFile();
-  static void ShowSequenceTable(bool* p_open);
-  static void ShowGenericTable(bool* p_open);
-  static void ShowTableFilterPopup(const char* popuop_id);
-  static void ShowFileBrowser(bool* p_open);  
+  static void SequenceTableWidget(bool* p_open);
+  static void TableWidget(bool* p_open);
+  static void TableFilterPopup(const char* popuop_id);
+  static void FileBrowserWidget(bool* p_open);  
 
   static void ShowAppWindow()
   {
@@ -40,14 +40,13 @@ namespace example
     }
 
     static bool show_sequence_table = false;
-    if (show_sequence_table) ShowSequenceTable(&show_sequence_table);
+    if (show_sequence_table) SequenceTableWidget(&show_sequence_table);
 
     static bool show_generic_table = true;
-    if (show_generic_table) ShowGenericTable(&show_generic_table);
-
-    static bool show_file_browser = true;
-    if(show_file_browser) ShowFileBrowser(&show_file_browser);
+    if (show_generic_table) TableWidget(&show_generic_table);
     
+    static bool show_file_browser = false;
+    if(show_file_browser) FileBrowserWidget(&show_file_browser);
 
     if (ImGui::BeginMainMenuBar())
     {
@@ -100,7 +99,7 @@ namespace example
     }
     if (ImGui::MenuItem("Open...", "Ctrl+O")) 
     {
-      //TODO: File browser modal
+      //TODO: open file browser modal
     }
     if (ImGui::BeginMenu("Open Recent"))
     {
@@ -134,7 +133,7 @@ namespace example
     if (ImGui::MenuItem("Quit", "Alt+F4")) {}
   }
 
-  static void ShowSequenceTable(bool* p_open)
+  static void SequenceTableWidget(bool* p_open)
   {
     ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Sequence list", p_open, NULL))
@@ -172,7 +171,7 @@ namespace example
     ImGui::End();
   }  
 
-  static void ShowGenericTable(bool* p_open)
+  static void TableWidget(bool* p_open)
   {
     //TODO: add input for columns and tables (i.e., std::map)
     ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
@@ -188,7 +187,7 @@ namespace example
       {
         if (ImGui::Button(columns[col]))
           ImGui::OpenPopup(&static_cast<char>(col));
-          ShowTableFilterPopup(&static_cast<char>(col));
+          TableFilterPopup(&static_cast<char>(col));
         ImGui::NextColumn();
       }
 
@@ -214,7 +213,7 @@ namespace example
     ImGui::End();
   }  
 
-  static void ShowTableFilterPopup(const char* popuop_id)
+  static void TableFilterPopup(const char* popuop_id)
   {
     if (ImGui::BeginPopup(popuop_id))
     { 
@@ -260,7 +259,7 @@ namespace example
     }
   }  
 
-  static void ShowFileBrowser(bool* p_open)
+  static void FileBrowserWidget(bool* p_open)
   {
     ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("File Browser", p_open, NULL))

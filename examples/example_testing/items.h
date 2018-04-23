@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
+#include <map>
 
 // TODO:
 // refactor each widget into its own class
@@ -16,11 +18,9 @@
 namespace example
 {
   // typdefs
-  typedef char element[256];
-  typedef element row[2];
-  typedef bool row_checked[3];
   
   // helpers
+  static char* convertStrToChar(const std::string& s);
 
   // main widgets and widget elements
   static void ShowAppWindow();
@@ -28,9 +28,16 @@ namespace example
   static void ShowMenuFile();
   static void SequenceTableWidget(bool* p_open);
   static void TableWidget(bool* p_open);
-  static void TableFilterPopup(const char* popuop_id, ImGuiTextFilter filter[], element lines[], bool checked[]);
+  static void TableFilterPopup(const char* popuop_id, ImGuiTextFilter&, std::vector<std::string>& column, std::vector<bool>& checked);
   static void FileBrowserWidget(bool* p_open);  
-  static void PlotWidget(bool* p_open);  
+  static void PlotWidget(bool* p_open); 
+
+  // static char* convertStrToChar(const std::string& s)
+  // { 
+  //   int n = s.length();
+  //   char char_array[256]; 
+  //   strcpy(char_array, s.c_str());
+  // }
 
   static void ShowAppWindow()
   {
@@ -195,53 +202,44 @@ namespace example
       // ImGui::BeginChild("##ScrollingRegion", ImVec2(0, ImGui::GetFontSize() * 20), false, ImGuiWindowFlags_HorizontalScrollbar);
 
       // table data
-      const char* headers[] = {"Name", "Path"};
-      typedef element row[2];
-      row columns[] = {
-        {"One",  "/path/one"},
-        {"Two",  "/path/two"},
-        {"Thre",  "/path/three"},
-      };
-      row_checked columns_checked[] = {
-        {true, true, true},
-        {true, true, true},
-        {true, true, true},
-        {true, true, true},
-        {true, true, true},
-        {true, true, true},
-        {true, true, true},
-        {true, true, true},
-      };
-      static ImGuiTextFilter filter[3];
+      const std::vector<std::string> headers = {"Name", "Path"};
+      const std::vector<std::string> column0 = {"One", "Two", "Three"};
+      const std::vector<std::string> column1 = {"/path/one",  "/path/two",  "/path/three"};
+      std::vector<bool> column_checked0 = {true, true};
+      std::vector<bool> column_checked1 = {true, true};
+      std::vector<std::vector<std::string>> columns;
+      columns.push_back(column0);
+      columns.push_back(column1);
+      std::vector<std::vector<bool>> columns_checked;
+      columns_checked.push_back(column_checked0);
+      columns_checked.push_back(column_checked1);
+      std::vector<ImGuiTextFilter> filter;
+      static ImGuiTextFilter filter0;
+      static ImGuiTextFilter filter1;
+      filter.push_back(filter0);
+      filter.push_back(filter1);
 
       // headers
-      ImGui::Columns(IM_ARRAYSIZE(headers) + 1, "mycolumns", true); // 4-ways, with border
+      ImGui::Columns(headers.size() + 1, "mycolumns", true); // 4-ways, with border
       ImGui::Separator();
       ImGui::Text("Index");
       ImGui::NextColumn();
-      for (int col = 0; col < IM_ARRAYSIZE(headers); ++col)
+      for (int col = 0; col < headers.size(); ++col)
       {
-        if (ImGui::Button(headers[col]))
+        if (ImGui::Button(headers[col].c_str()))
           ImGui::OpenPopup(&static_cast<char>(col));
-          element elements[IM_ARRAYSIZE(columns)]; // extract out column data
-          bool checked[IM_ARRAYSIZE(columns)]; // extract out checked columns
-          for (int i = 0; i < IM_ARRAYSIZE(columns); ++i)
-          {
-            *elements[i] = *columns[i][col];
-            checked[i] = columns[i][col];
-          }
-          TableFilterPopup(&static_cast<char>(col), filter, columns, columns_checked);
+          TableFilterPopup(&static_cast<char>(col), filter[col], columns[col], columns_checked[col]);
         ImGui::NextColumn();
       }
 
       // body
       ImGui::Separator();
       static int selected = -1;
-      for (int i = 0; i < IM_ARRAYSIZE(columns); ++i)
+      for (int i = 0; i < columns[0].size(); ++i)
       {
         bool pass_all_columns = true;
-        for (int j = 0; j < IM_ARRAYSIZE(headers); ++j)
-          if (!filter[j].PassFilter(columns[i][j]))
+        for (int j = 0; j < headers.size(); ++j)
+          if (!filter[j].PassFilter(columns[j][i].c_str()))
             pass_all_columns = false;
 
         if (pass_all_columns)
@@ -252,9 +250,9 @@ namespace example
               selected = i;
           bool hovered = ImGui::IsItemHovered();
           ImGui::NextColumn();
-          for (int j = 0; j < IM_ARRAYSIZE(headers); ++j)
+          for (int j = 0; j < headers.size(); ++j)
           {
-            ImGui::Text(columns[i][j]);
+            ImGui::Text(columns[j][i].c_str());
             ImGui::NextColumn();
           }
         }
@@ -264,7 +262,7 @@ namespace example
     ImGui::End();
   }  
 
-  static void TableFilterPopup(const char* popuop_id, ImGuiTextFilter filter[], row columns[], bool checked[])
+  static void TableFilterPopup(const char* popuop_id, ImGuiTextFilter& filter, std::vector<std::string>& column, std::vector<bool>& checked)
   {
     if (ImGui::BeginPopup(popuop_id))
     { 
@@ -284,13 +282,16 @@ namespace example
       filter.Draw();
       static bool check_all = true;
       if (ImGui::Button("check all"))
-        for (int i = 0; i < IM_ARRAYSIZE(lines); ++i) checked[i] = true;
+        for (int i = 0; i < column.size(); ++i) checked[i] = true;
       ImGui::SameLine();
       if (ImGui::Button("uncheck all"))
-        for (int i = 0; i < IM_ARRAYSIZE(lines); ++i) checked[i] = false;
-      for (int i = 0; i < IM_ARRAYSIZE(lines); ++i)
-        if (filter.PassFilter(lines[i]))
-          ImGui::Checkbox(lines[i], &checked[i]);
+        for (int i = 0; i < column.size(); ++i) checked[i] = false;
+      for (int i = 0; i < column.size(); ++i)
+        if (filter.PassFilter(column[i].c_str()))
+        {
+          bool check = checked[i]; // should be checked.data()[i]
+          ImGui::Checkbox(column[i].c_str(), &check);
+        }
 
       // Apply filters
       ImGui::Separator();
@@ -309,9 +310,11 @@ namespace example
 
   static void FileBrowserWidget(bool* p_open)
   {
+
     ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("File Browser", p_open, NULL))
     {
+
       // top: up level, current directory string, refresh icon, search
       // ImGui::BeginChild("Top");
       if (ImGui::Button("Up"))
@@ -360,6 +363,8 @@ namespace example
       }
       // Body
       ImGui::Separator();
+      // // typedef (todo: change to std::vector/map)
+      typedef char element[256];
       typedef element row[4];
       row columns[] = {
         {"file1", "04/15/2018 2:00 PM", ".csv", "1MB"},
@@ -438,6 +443,11 @@ namespace example
     ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Generic plot", p_open))
     {
+      // typedef (todo: change to std::vector/map)
+      typedef char element[256];
+      typedef element row[3];
+      typedef bool row_checked[3];
+
       // left: filters
       static int selected_dir = 0;
       char* headers[] = {"sample_name", "sample_type", "component_name"}; // feature or sample columns to filter on

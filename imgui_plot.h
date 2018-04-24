@@ -112,8 +112,9 @@ public:
 // ## Axes
 class ImAxes
 {
+public:
     void ShowAxesTop(char* title, float x_tick_major, float x_tick_minor);
-    void ShowAxesBottom(char* , float x_tick_major, float x_tick_minor);
+    void ShowAxesBottom(char* title, float x_tick_major, float x_tick_minor);
     void ShowAxesLeft(char* title, float y_tick_major, float y_tick_minor);
     void ShowAxesRight(char* title, float y_tick_major, float y_tick_minor);
     void ShowXAxesGridLines();
@@ -158,7 +159,18 @@ class ImScatterPlot: public ImPlotter
 {
 public:
     virtual void ShowPlot() override;
-    void ShowPlot()
+    void ShowPlot(float x[], float y[], float r[], ImU32 stroke_col, float stroke_width,
+        ImU32 fill_col, char* labels[], ImFont* label_font, ImU32 label_font_col,
+        float label_font_size, float dx1[], float dx2[], float dy1[], float dy2[])
+    {
+        //TODO: draw circles
+
+        //TODO: draw labels
+
+        //TODO: add tool tip
+
+        //TODO: add zoom
+    };
 };
 
 

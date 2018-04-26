@@ -1,6 +1,9 @@
 // # Low level plotting features and components
 #include "imgui.h"
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
+#include <iostream>
+
 namespace ImGui
 {
     // ## Interpolation
@@ -84,15 +87,27 @@ namespace ImGui
     class ImScales
     {
     public:
-        void Domain(ImVec2 domain);     // input data ranges
-        void Range(ImVec2 range);      // output data ranges
+        void SetDomain(ImVec2 min, ImVec2 max){domain_min_ = min; domain_max_ = max;}     // input data ranges
+        void SetRange(ImVec2 min, ImVec2 max){range_min_ = min; range_max_ = max;}     // output data ranges
+        virtual ImVec2 Scale(ImVec2 t) = 0;
+    protected:
+        ImVec2 domain_min_;
+        ImVec2 domain_max_;
+        ImVec2 range_min_;
+        ImVec2 range_max_;
     };
 
     class ImLinearScales: public ImScales
     {
     public:
         // continuous scales
-        void    Linear();
+        ImVec2 Scale(ImVec2 t)
+        {
+            const ImVec2 tx = (t - domain_min_)/(domain_max_ - domain_min_);
+            const ImVec2 ty = (range_max_ - range_min_)*tx + range_min_;
+            // printf("tx (%f,%f), ty(%f,%f)", tx.x, tx.y, ty.x, ty.y);
+            return ty;
+        };
         // void    Pow();
         // void    Log();
         // void    Time();
@@ -153,8 +168,11 @@ namespace ImGui
     public:
         ImPlotter(){};
         ~ImPlotter(){};
-        void figure(ImVec2 plot_size, const char* title)
-
+        void SetScales(ImScales* scales){scales_ = scales;}
+        void ShowFigure(ImVec2 plot_size,
+            const float& margin_bottom, const float& margin_top, 
+            const float& margin_left, const float& margin_right,
+            const char* title)
         {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
@@ -163,102 +181,160 @@ namespace ImGui
             ImGuiContext& g = *GImGui;
             const ImGuiStyle& style = g.Style;
 
-            const ImVec2 title_size = CalcTextSize(title, NULL, true);
-            if (plot_size.x == 0.0f)
-                plot_size.x = CalcItemWidth();
-            if (plot_size.y == 0.0f)
-                plot_size.y = title_size.y + (style.FramePadding.y * 2);
-
+            // Create the window
             const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(plot_size.x, plot_size.y));
-            const ImRect inner_bb(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding);
-            const ImRect total_bb(frame_bb.Min, frame_bb.Max + ImVec2(title_size.x > 0.0f ? style.ItemInnerSpacing.x + title_size.x : 0.0f, 0));
-            ItemSize(total_bb, style.FramePadding.y);
-            if (!ItemAdd(total_bb, 0, &frame_bb))
-                return;
-            const bool hovered = ItemHoverable(inner_bb, 0);
-
+            const ImRect inner_bb_(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding);
+            const ImRect figure_bb_(ImVec2(inner_bb_.Min.x + margin_bottom, inner_bb_.Min.y + margin_left),
+                ImVec2(inner_bb_.Max.x - margin_right, inner_bb_.Max.y - margin_top));
+            const ImRect total_bb(frame_bb.Min, frame_bb.Max);
             RenderFrame(frame_bb.Min, frame_bb.Max, GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
+
+            // Draw the title
+            const ImVec2 title_size = CalcTextSize(title, NULL, true);
+            if (title_size.x > 0.0f)
+                // centered by default (add parameter for title position)
+                RenderText(ImVec2((inner_bb_.GetTR().x - inner_bb_.GetTL().x)*0.5f+title_size.x*0.5f, inner_bb_.GetTR().y), title);
+
+            // update scales range
+            scales_->SetRange(figure_bb_.GetBL(), figure_bb_.GetTR());
         }
-        virtual void ShowPlot();
-    private:
+
+        /**
+         * @brief Draw top, bottom, left, and right axes depending on user input
+         * 
+         * Axes will be drawn starting at the figure bounding box and migrated outward
+         *  through the margins
+         * 
+         * @param TODO...
+         * @param x_tick_major # of major tick strikes (includes min and max)
+         */
+        void ShowAxes(
+            const float* x_data, const float* y_data, const int n_data,
+            char* top_title, float top_x_tick_major, float top_x_tick_minor, 
+                float top_x_axis_thickness, ImU32 top_x_axis_col,
+                float top_x_axis_tick_font, float top_x_axis_tick_font_size, ImU32 top_x_axis_font_col,
+            char* bottom_title, float bottom_x_tick_major, float bottom_x_tick_minor,
+                float bottom_x_axis_thickness, ImU32 bottom_x_axis_col,
+            char* left_title, float left_y_tick_major, float left_y_tick_minor,
+                float left_y_axis_thickness, ImU32 left_y_axis_col,
+            char* right_title, float right_y_tick_major, float right_y_tick_minor,
+                float right_y_axis_thickness, ImU32 right_y_axis_col,
+            bool top_x_axis = false, bool bottom_x_axis = false, 
+            bool left_y_axis = false, bool right_y_axis = false,
+            bool x_axes_grid_lines = false, bool y_axes_grid_lines = false)
+        {            
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            const float text_height = CalculateTextSize("a", NULL, true).y;
+            const float text_height_spacing = text_height*0.8;
+            const ImVec2 top_title_size = CalcTextSize(top_title, NULL, true);
+
+            // Top
+            if (top_axis)
+            {
+                const ImVec2 top_tick_size = CalcTextSize(top_title, NULL, true);
+                const float top_tick_height_spacing = top_tick_size.y*0.8;
+                // 2 * text_height (title height + axis tick height) + 2 * text_height_spacing (spacing between axis and ticks and ticks and title)
+                ImVec2 top_title_pos = ImVec2((figure_bb_.GetTR().x - figure_bb_.GetTL().x)*0.5f+top_tick_size.x*0.5f,
+                    figure_bb_.GetTR().y + top_tick_size.y + top_tick_height_spacing);
+                
+                const int tick_major_span = (int)(top_x_tick_major * (x_data[n_data-1] - x_data[0]));
+                const int n_tick_major = 
+                ImVec2 tick_pos[]
+                window->DrawList->AddText(top_x_axis_tick_font, top_x_axis_tick_font_size, tick_pos, GetColorU32(ImGuiCol_Text), );
+                
+                window->DrawList->AddLine(figure_bb_.GetTR(), figure_bb_.GetTL(), top_x_axis_col, top_x_axis_thickness);
+
+                if (top_top_title != NULL)
+                {
+                    const ImVec2 top_title_size = CalcTextSize(top_title, NULL, true);
+                    const float top_title_height_spacing = top_title_size.y*0.8;
+                    // 2 * text_height (title height + axis tick height) + 2 * text_height_spacing (spacing between axis and ticks and ticks and title)
+                    ImVec2 top_title_pos = ImVec2((figure_bb_.GetTR().x - figure_bb_.GetTL().x)*0.5f+top_title_size.x*0.5f,
+                        figure_bb_.GetTR().y + text_height.y * 2 + top_title_height_spacing * 2);
+                    RenderText(top_title_pos, title);
+                }
+            }
+        };
+
+        // virtual void ShowPlot() = 0; ? linking error
+
+    protected:
         ImVec2 plot_size_;
-        const char* title_
+        ImRect inner_bb_;
+        ImRect figure_bb_;
+        ImScales* scales_;
     };
 
     class ImScatterPlot: public ImPlotter
     {
     public:
-        virtual void ShowPlot() override;
-        void ShowPlot(float x_data[], float y_data[], float r_data[], ImU32 stroke_col, float stroke_width,
-            ImU32 fill_col, char* labels[], ImFont* label_font, ImU32 label_font_col,
-            float label_font_size, float dx1[], float dx2[], float dy1[], float dy2[])
+        // void ShowPlot() override; ?
+        /**
+         * @brief Shows the plot on the figure
+         * 
+         * @param x_data X data of length n (ordered from lowest to highest)
+         * @param y_data y data of length n (ordered from lowest to highest)
+         * @param r_data radius lengths of each point of length n (matching order of x/y_data)
+         * @param stroke_col circle (or other symbol) stroke color
+         * @param stroke_width circle (or other symbol) stroke width
+         * @param fill col circle (or other symbol) fill color
+         * @param hovered_col circle (or other symbol) hover color
+         * @param labels Label for each data point of length n (matching order of x/y_data)
+         * @param label_font Label font
+         * @param label_font_col Label font color
+         * @param label_font_size Label font size
+         * @param dx1 Upper x data error of length n (matching order of x/y_data)
+         * ...
+         */
+        void ShowPlot(const float* x_data, const float* y_data, const float* r_data, const int n_data,
+            const ImU32 stroke_col, const float stroke_width,
+            const ImU32 fill_col, const ImU32 hovered_col, const char* series, const char* labels[], 
+            const ImFont* label_font, const ImU32 label_font_col,
+            const float label_font_size, const float* dx1, const float* dx2, const float* dy1, const float* dy2)
         {
-            //TODO: draw circles
-            if (IM_ARRAYSIZE(x_data) > 0)
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImGuiContext& g = *GImGui;
+
+            // determine the domain from user input
+            ImVec2 pos_min(x_data[0], y_data[0]);
+            ImVec2 pos_max(x_data[n_data-1], y_data[n_data-1]);
+            scales_->SetDomain(pos_min, pos_max);
+
+            if (n_data > 0)
             {
-                int res_w = ImMin((int)graph_size.x, values_count) + ((plot_type == ImGuiPlotType_Lines) ? -1 : 0);
-                int item_count = values_count + ((plot_type == ImGuiPlotType_Lines) ? -1 : 0);
-
-                // Tooltip on hover
-                int v_hovered = -1;
-                if (hovered)
+                int t0 = 0;
+                for (int n = 0; n < n_data; ++n)
                 {
-                    const float t = ImClamp((g.IO.MousePos.x - inner_bb.Min.x) / (inner_bb.Max.x - inner_bb.Min.x), 0.0f, 0.9999f);
-                    const int v_idx = (int)(t * item_count);
-                    IM_ASSERT(v_idx >= 0 && v_idx < values_count);
 
-                    const float v0 = values_getter(data, (v_idx + values_offset) % values_count);
-                    const float v1 = values_getter(data, (v_idx + 1 + values_offset) % values_count);
-                    if (plot_type == ImGuiPlotType_Lines)
-                        SetTooltip("%d: %8.4g\n%d: %8.4g", v_idx, v0, v_idx+1, v1);
-                    else if (plot_type == ImGuiPlotType_Histogram)
-                        SetTooltip("%d: %8.4g", v_idx, v0);
-                    v_hovered = v_idx;
-                }
+                    // Points
+                    const int v1_idx = (int)(t0 * n_data);
+                    ImVec2 centre(x_data[n], y_data[n]);
+                    ImVec2 centre_scaled = scales_->Scale(centre);
+                    window->DrawList->AddCircleFilled(centre_scaled, r_data[n], fill_col, 12);
 
-                const float t_step = 1.0f / (float)res_w;
-                const float inv_scale = (scale_min == scale_max) ? 0.0f : (1.0f / (scale_max - scale_min));
-
-                float v0 = values_getter(data, (0 + values_offset) % values_count);
-                float t0 = 0.0f;
-                ImVec2 tp0 = ImVec2( t0, 1.0f - ImSaturate((v0 - scale_min) * inv_scale) );                       // Point in the normalized space of our target rectangle
-                float histogram_zero_line_t = (scale_min * scale_max < 0.0f) ? (-scale_min * inv_scale) : (scale_min < 0.0f ? 0.0f : 1.0f);   // Where does the zero line stands
-
-                const ImU32 col_base = GetColorU32((plot_type == ImGuiPlotType_Lines) ? ImGuiCol_PlotLines : ImGuiCol_PlotHistogram);
-                const ImU32 col_hovered = GetColorU32((plot_type == ImGuiPlotType_Lines) ? ImGuiCol_PlotLinesHovered : ImGuiCol_PlotHistogramHovered);
-
-                for (int n = 0; n < res_w; n++)
-                {
-                    const float t1 = t0 + t_step;
-                    const int v1_idx = (int)(t0 * item_count + 0.5f);
-                    IM_ASSERT(v1_idx >= 0 && v1_idx < values_count);
-                    const float v1 = values_getter(data, (v1_idx + values_offset + 1) % values_count);
-                    const ImVec2 tp1 = ImVec2( t1, 1.0f - ImSaturate((v1 - scale_min) * inv_scale) );
-
-                    // NB: Draw calls are merged together by the DrawList system. Still, we should render our batch are lower level to save a bit of CPU.
-                    ImVec2 pos0 = ImLerp(inner_bb.Min, inner_bb.Max, tp0);
-                    ImVec2 pos1 = ImLerp(inner_bb.Min, inner_bb.Max, (plot_type == ImGuiPlotType_Lines) ? tp1 : ImVec2(tp1.x, histogram_zero_line_t));
-                    if (plot_type == ImGuiPlotType_Lines)
+                    // Tooltip on hover
+                    if (centre_scaled.x - r_data[n] <= g.IO.MousePos.x && 
+                    centre_scaled.x + r_data[n] >= g.IO.MousePos.x &&
+                    centre_scaled.y - r_data[n] <= g.IO.MousePos.y && 
+                    centre_scaled.y + r_data[n] >= g.IO.MousePos.y)
                     {
-                        window->DrawList->AddLine(pos0, pos1, v_hovered == v1_idx ? col_hovered : col_base);
+                        SetTooltip("%s\n%s: %8.4g\n%s: %8.4g", series, "x", x_data[n], "y", y_data[n]);
+                        window->DrawList->AddCircleFilled(centre_scaled, r_data[n], hovered_col, 12);
                     }
-                    else if (plot_type == ImGuiPlotType_Histogram)
-                    {
-                        if (pos1.x >= pos0.x + 2.0f)
-                            pos1.x -= 1.0f;
-                        window->DrawList->AddRectFilled(pos0, pos1, v_hovered == v1_idx ? col_hovered : col_base);
-                    }
-
-                    t0 = t1;
-                    tp0 = tp1;
+                    // labels
+                    if (labels != NULL)
+                        window->DrawList->AddText(g.Font, g.FontSize, centre_scaled, GetColorU32(ImGuiCol_Text), labels[n]);
+                    t0 += 1;
                 }
-            }
-
-            //TODO: draw labels
-
-            //TODO: add tool tip
 
             //TODO: add zoom
+            }
         };
     };
 

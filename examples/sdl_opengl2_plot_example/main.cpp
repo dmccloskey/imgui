@@ -54,7 +54,7 @@ int main(int, char**)
     //io.Fonts->AddFontDefault();
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+    io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != NULL);
@@ -83,20 +83,31 @@ int main(int, char**)
         {
             bool show_plot_test = true;
             ImGui::Begin("Plot testing", &show_plot_test, NULL);
+
+            // Figure
             ImGui::ImLinearScales scales;
             ImGui::ImScatterPlot plotter;
             plotter.SetScales(&scales);
             plotter.ShowFigure(ImVec2(480,480), 
-                10.0f, 10.0f, 10.0f, 10.0f,
-                "Scatter Plot");
+                50.0f, 50.0f, 50.0f, 50.0f,
+                "Scatter Plot", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
 
+            // Plot
             const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
             const float y_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
             const float r_data[] = {5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f};
             const char* labels[] = {"1", "2", "3", "4", "5", "6"};
             ImU32 plot_color = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
             ImU32 hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
-            plotter.ShowPlot(x_data, y_data, r_data, 6, NULL, NULL, plot_color, hover_color, "series1", labels, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            plotter.ShowPlot(x_data, y_data, r_data, 6, NULL, NULL, plot_color, hover_color, "series1", labels,
+                io.FontDefault, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)), 12.0f,
+                NULL, NULL, NULL, NULL);
+
+            // Axes
+            plotter.ShowXAxisTop(x_data, y_data, 6,
+                "x-axis top", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                10, "%2f", 20.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
             ImGui::End();
         }
 

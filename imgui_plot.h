@@ -10,18 +10,18 @@ namespace ImGui
     // - interpolate
     // - sample
     // - splines
-    static inline time_t    ImLerp(const time_t& a, const time_t& b, const time_t& t);                      //TODO [DM]
-    static inline float     ImBSBasis(float t1, float v0, float v1, float v2, float v3);                            //TODO [DM] BSpline basis function
-    static inline ImVec4    ImBSBasis(const ImVec4& t1, const ImVec4& v0, const ImVec4& v1, const ImVec4& v2, const ImVec4& v3);                            //TODO [DM] BSpline basis function used for colors
-    static inline int       ImBSerp(int* v, float t, bool closed = false);                            //TODO [DM] BSpline interpolate from [a, b) or [a, b] (closed=true)
-    static inline float     ImBSerp(float* v, float t, bool closed = false);                        //TODO [DM] BSpline interpolate from [a, b) or [a, b] (closed=true)
-    static inline ImVec4    ImBSerp(const ImVec4* v, const ImVec4& t, bool closed = false);                        //TODO [DM] BSpline interpolate used for colors from [a, b) or [a, b] (closed=true)
-    static inline int*      ImQuaLerp(int a, int b, float t, int n);                        //TODO [DM] Quantized linear sampler
-    static inline float*    ImQuaLerp(float a, float b, float t, int n);                        //TODO [DM] Quantized linear sampler
-    static inline time_t*   ImQuaLerp(const time_t& a, const time_t& b, const time_t& t, int n);                        //TODO [DM] Quantized linear sampler
-    static inline int*      ImQuaBSerp(int a, int b, float t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler
-    static inline float*    ImQuaBSerp(float a, float b, float t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler
-    static inline ImVec4*   ImQuaBSerp(const ImVec4& a, const ImVec4& b, const ImVec4& t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler used for colors
+    // static inline time_t    ImLerp(const time_t& a, const time_t& b, const time_t& t);                      //TODO [DM]
+    // static inline float     ImBSBasis(float t1, float v0, float v1, float v2, float v3);                            //TODO [DM] BSpline basis function
+    // static inline ImVec4    ImBSBasis(const ImVec4& t1, const ImVec4& v0, const ImVec4& v1, const ImVec4& v2, const ImVec4& v3);                            //TODO [DM] BSpline basis function used for colors
+    // static inline int       ImBSerp(int* v, float t, bool closed = false);                            //TODO [DM] BSpline interpolate from [a, b) or [a, b] (closed=true)
+    // static inline float     ImBSerp(float* v, float t, bool closed = false);                        //TODO [DM] BSpline interpolate from [a, b) or [a, b] (closed=true)
+    // static inline ImVec4    ImBSerp(const ImVec4* v, const ImVec4& t, bool closed = false);                        //TODO [DM] BSpline interpolate used for colors from [a, b) or [a, b] (closed=true)
+    // static inline int*      ImQuaLerp(int a, int b, float t, int n);                        //TODO [DM] Quantized linear sampler
+    // static inline float*    ImQuaLerp(float a, float b, float t, int n);                        //TODO [DM] Quantized linear sampler
+    // static inline time_t*   ImQuaLerp(const time_t& a, const time_t& b, const time_t& t, int n);                        //TODO [DM] Quantized linear sampler
+    // static inline int*      ImQuaBSerp(int a, int b, float t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler
+    // static inline float*    ImQuaBSerp(float a, float b, float t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler
+    // static inline ImVec4*   ImQuaBSerp(const ImVec4& a, const ImVec4& b, const ImVec4& t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler used for colors
 
     // ## Data
     // - plotting interfaces should except the 
@@ -89,7 +89,9 @@ namespace ImGui
     public:
         void SetDomain(ImVec2 min, ImVec2 max){domain_min_ = min; domain_max_ = max;}     // input data ranges
         void SetRange(ImVec2 min, ImVec2 max){range_min_ = min; range_max_ = max;}     // output data ranges
-        virtual ImVec2 Scale(ImVec2 t) = 0;
+        virtual ImVec2 Scale(const ImVec2& t) = 0;
+        virtual float ScaleX(const float& t) = 0;
+        virtual float ScaleY(const float& t) = 0;
     protected:
         ImVec2 domain_min_;
         ImVec2 domain_max_;
@@ -101,11 +103,23 @@ namespace ImGui
     {
     public:
         // continuous scales
-        ImVec2 Scale(ImVec2 t)
+        ImVec2 Scale(const ImVec2& t)
         {
             const ImVec2 tx = (t - domain_min_)/(domain_max_ - domain_min_);
             const ImVec2 ty = (range_max_ - range_min_)*tx + range_min_;
             // printf("tx (%f,%f), ty(%f,%f)", tx.x, tx.y, ty.x, ty.y);
+            return ty;
+        };
+        float ScaleX(const float& t)
+        {
+            const float tx = (t - domain_min_.x)/(domain_max_.x - domain_min_.x);
+            const float ty = (range_max_.x - range_min_.x)*tx + range_min_.x;
+            return ty;
+        };
+        float ScaleY(const float& t)
+        {
+            const float tx = (t - domain_min_.y)/(domain_max_.y - domain_min_.y);
+            const float ty = (range_max_.y - range_min_.y)*tx + range_min_.y;
             return ty;
         };
         // void    Pow();
@@ -172,7 +186,7 @@ namespace ImGui
         void ShowFigure(ImVec2 plot_size,
             const float& margin_bottom, const float& margin_top, 
             const float& margin_left, const float& margin_right,
-            const char* title)
+            const char* title, ImFont* title_font, const float& title_font_size, const ImU32& title_font_col)
         {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
@@ -192,8 +206,13 @@ namespace ImGui
             // Draw the title
             const ImVec2 title_size = CalcTextSize(title, NULL, true);
             if (title_size.x > 0.0f)
+            {
                 // centered by default (add parameter for title position)
-                RenderText(ImVec2((inner_bb_.GetTR().x - inner_bb_.GetTL().x)*0.5f+title_size.x*0.5f, inner_bb_.GetTR().y), title);
+                const ImVec2 title_pos(
+                    (inner_bb_.GetTR().x - inner_bb_.GetTL().x)*0.5f + title_size.x*0.5f,
+                    inner_bb_.GetTR().y);
+                window->DrawList->AddText(title_font, title_font_size, title_pos, title_font_col, title);
+            }
 
             // update scales range
             scales_->SetRange(figure_bb_.GetBL(), figure_bb_.GetTR());
@@ -206,56 +225,65 @@ namespace ImGui
          *  through the margins
          * 
          * @param TODO...
-         * @param x_tick_major # of major tick strikes (includes min and max)
+         * @param x_tick # of tick strikes (includes min and max)
          */
         void ShowAxes(
             const float* x_data, const float* y_data, const int n_data,
-            char* top_title, float top_x_tick_major, float top_x_tick_minor, 
+            char* top_title, int top_x_ticks, 
                 float top_x_axis_thickness, ImU32 top_x_axis_col,
-                float top_x_axis_tick_font, float top_x_axis_tick_font_size, ImU32 top_x_axis_font_col,
-            char* bottom_title, float bottom_x_tick_major, float bottom_x_tick_minor,
+                ImFont* top_x_axis_tick_font, float top_x_axis_tick_font_size, ImU32 top_x_axis_font_col,
+            char* bottom_title, int bottom_x_ticks,
                 float bottom_x_axis_thickness, ImU32 bottom_x_axis_col,
-            char* left_title, float left_y_tick_major, float left_y_tick_minor,
+            char* left_title, int left_y_ticks,
                 float left_y_axis_thickness, ImU32 left_y_axis_col,
-            char* right_title, float right_y_tick_major, float right_y_tick_minor,
+            char* right_title, int right_y_ticks,
                 float right_y_axis_thickness, ImU32 right_y_axis_col,
             bool top_x_axis = false, bool bottom_x_axis = false, 
             bool left_y_axis = false, bool right_y_axis = false,
-            bool x_axes_grid_lines = false, bool y_axes_grid_lines = false)
+            bool x_axes_grid_lines = false, bool y_axes_grid_lines = false);
+        void ShowXAxisTop(
+            const float* x_data, const float* y_data, const int n_data,
+            char* top_title, ImFont* top_title_font, float top_title_font_size, ImU32 top_title_font_col,
+                int top_x_ticks, char* top_x_tick_format,
+                float top_x_axis_thickness, ImU32 top_x_axis_col,
+                ImFont* top_x_axis_tick_font, float top_x_axis_tick_font_size, ImU32 top_x_axis_font_col,
+            bool x_axes_grid_lines = false)
         {            
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
                 return;
 
-            const float text_height = CalculateTextSize("a", NULL, true).y;
-            const float text_height_spacing = text_height*0.8;
-            const ImVec2 top_title_size = CalcTextSize(top_title, NULL, true);
-
-            // Top
-            if (top_axis)
+            // Tick major
+            const ImVec2 tick_size = CalcTextSize(top_title, NULL, true);
+            const float tick_height_spacing = tick_size.y*0.8;
+            ImVec2 _pos = ImVec2((figure_bb_.GetTR().x - figure_bb_.GetTL().x)*0.5f+tick_size.x*0.5f,
+                figure_bb_.GetTR().y + tick_size.y + tick_height_spacing);
+            
+            const float tick_span = (x_data[n_data-1] - x_data[0])/top_x_ticks;
+            int n_ticks = (int)((x_data[n_data-1] - x_data[0])/tick_span);
+            for (int n=0; n<n_ticks; ++n)
             {
-                const ImVec2 top_tick_size = CalcTextSize(top_title, NULL, true);
-                const float top_tick_height_spacing = top_tick_size.y*0.8;
-                // 2 * text_height (title height + axis tick height) + 2 * text_height_spacing (spacing between axis and ticks and ticks and title)
-                ImVec2 top_title_pos = ImVec2((figure_bb_.GetTR().x - figure_bb_.GetTL().x)*0.5f+top_tick_size.x*0.5f,
-                    figure_bb_.GetTR().y + top_tick_size.y + top_tick_height_spacing);
-                
-                const int tick_major_span = (int)(top_x_tick_major * (x_data[n_data-1] - x_data[0]));
-                const int n_tick_major = 
-                ImVec2 tick_pos[]
-                window->DrawList->AddText(top_x_axis_tick_font, top_x_axis_tick_font_size, tick_pos, GetColorU32(ImGuiCol_Text), );
-                
-                window->DrawList->AddLine(figure_bb_.GetTR(), figure_bb_.GetTL(), top_x_axis_col, top_x_axis_thickness);
+                char tick_label[64];
+                float tick_value = ImLerp(x_data[0], x_data[n_data-1], tick_span * n);
+                ImVec2 tick_pos = ImVec2(scales_->ScaleX(tick_value), figure_bb_.GetTR().y); // interpolate the position
+                sprintf(tick_label, top_x_tick_format, tick_value);
+                window->DrawList->AddText(top_x_axis_tick_font, top_x_axis_tick_font_size, tick_pos, top_x_axis_font_col, tick_label);
+            }
 
-                if (top_top_title != NULL)
-                {
-                    const ImVec2 top_title_size = CalcTextSize(top_title, NULL, true);
-                    const float top_title_height_spacing = top_title_size.y*0.8;
-                    // 2 * text_height (title height + axis tick height) + 2 * text_height_spacing (spacing between axis and ticks and ticks and title)
-                    ImVec2 top_title_pos = ImVec2((figure_bb_.GetTR().x - figure_bb_.GetTL().x)*0.5f+top_title_size.x*0.5f,
-                        figure_bb_.GetTR().y + text_height.y * 2 + top_title_height_spacing * 2);
-                    RenderText(top_title_pos, title);
-                }
+            // Axis
+            window->DrawList->AddLine(figure_bb_.GetTL(), figure_bb_.GetTR(), top_x_axis_col, top_x_axis_thickness);
+            window->DrawList->AddLine(figure_bb_.GetBL(), figure_bb_.GetTL(), top_x_axis_col, top_x_axis_thickness);
+            window->DrawList->AddLine(figure_bb_.GetBL(), figure_bb_.GetBR(), top_x_axis_col, top_x_axis_thickness);
+            window->DrawList->AddLine(figure_bb_.GetBR(), figure_bb_.GetTL(), top_x_axis_col, top_x_axis_thickness);
+
+            // Axis title
+            if (top_title != NULL)
+            {
+                const ImVec2 title_size = CalcTextSize(top_title, NULL, true);
+                const float title_height_spacing = title_size.y*0.8;
+                ImVec2 title_pos = ImVec2((figure_bb_.GetTR().x - figure_bb_.GetTL().x)*0.5f + title_size.x*0.5f,
+                    figure_bb_.GetTR().y + title_size.y + tick_size.y + title_height_spacing + tick_height_spacing);
+                window->DrawList->AddText(top_title_font, top_title_font_size, title_pos, top_title_font_col, top_title);
             }
         };
 
@@ -329,7 +357,7 @@ namespace ImGui
                     }
                     // labels
                     if (labels != NULL)
-                        window->DrawList->AddText(g.Font, g.FontSize, centre_scaled, GetColorU32(ImGuiCol_Text), labels[n]);
+                        window->DrawList->AddText(label_font, label_font_size, centre_scaled, label_font_col, labels[n]);
                     t0 += 1;
                 }
 

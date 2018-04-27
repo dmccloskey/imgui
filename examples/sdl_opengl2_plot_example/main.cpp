@@ -84,30 +84,71 @@ int main(int, char**)
             bool show_plot_test = true;
             ImGui::Begin("Plot testing", &show_plot_test, NULL);
 
+            // Data
+            const float y_data1[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+            const float y_data2[] = {2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
+            const float y_data3[] = {6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
+            const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+
+            const float r_data[] = {5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 6.0f};
+            const char* labels[] = {"1", "2", "3", "4", "5", "6", "7"};
+            const char* series[] = {"series1", "series2", "series3"};
+            const int n_data = 7;
+
+            // Data scales         
+            ImGui::ImLinearScales<float, float> scales_x;   
+            ImGui::ImLinearScales<float, float> scales_y;   
+            scales_x.SetDomain(0.0f, 6.0f);
+            scales_y.SetDomain(0.0f, 6.0f);
+
+            // Color scales            
+            ImGui::ImLinearScales<float, ImVec4> scales_color; 
+            scales_color.SetDomain(0.0f, 2.0f); 
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
+
             // Figure
-            ImGui::ImLinearScales scales;
-            ImGui::ImScatterPlot plotter;
-            plotter.SetScales(&scales);
-            plotter.ShowFigure(ImVec2(480,480), 
+            ImGui::ImScatterPlot2D<float, float> plotter;
+            plotter.SetScales(&scales_x, &scales_y);
+            plotter.ShowFigure(ImVec2(520, 480), 
                 50.0f, 50.0f, 50.0f, 50.0f,
                 "Scatter Plot", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
 
-            // Plot
-            const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
-            const float y_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
-            const float r_data[] = {5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f};
-            const char* labels[] = {"1", "2", "3", "4", "5", "6"};
-            ImU32 plot_color = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
+            // Plot 1
             ImU32 hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
-            plotter.ShowPlot(x_data, y_data, r_data, 6, NULL, NULL, plot_color, hover_color, "series1", labels,
+            plotter.ShowPlot(x_data, y_data1, r_data, n_data, NULL, NULL, 
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0)), hover_color, series[0], labels,
+                io.FontDefault, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)), 12.0f,
+                NULL, NULL, NULL, NULL);
+            
+            // Plot 2
+            plotter.ShowPlot(x_data, y_data2, r_data, n_data, NULL, NULL, 
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1)), hover_color, series[1], labels,
+                io.FontDefault, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)), 12.0f,
+                NULL, NULL, NULL, NULL);
+            
+            // Plot 3
+            plotter.ShowPlot(x_data, y_data3, r_data, n_data, NULL, NULL,
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2)), hover_color, series[2], labels,
                 io.FontDefault, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)), 12.0f,
                 NULL, NULL, NULL, NULL);
 
             // Axes
-            plotter.ShowXAxisTop(x_data, y_data, 6,
+            plotter.ShowXAxisTop(
                 "x-axis top", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
                 10, "%2f", 20.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
                 io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+            
+
+            // Legend
+            const ImU32 series_color[] = {
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0)),
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1)),
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2))
+            };
+            plotter.ShowLegend("TR", 40.0f, 40.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)), 
+                series, series_color, 3,
+                io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+
             ImGui::End();
         }
 

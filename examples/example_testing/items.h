@@ -59,7 +59,7 @@ namespace example
       ImGui::End();
     }
 
-    static bool show_sequence_progress = false;
+    static bool show_sequence_progress = true;
     if (show_sequence_progress) SequenceProgressWidget(&show_sequence_progress);
 
     static bool show_generic_table = true;
@@ -159,6 +159,27 @@ namespace example
     if (ImGui::MenuItem("Quit", "Alt+F4")) {}
   }
 
+  /**
+   * @brief Displays a sequence progress widget
+   * 
+   * The purpose of this UI is to allow users to manage the following:
+   * - The sample type for each sample
+   * - The order of samples in a sequence
+   * - The order of sequence segment or sample group execution
+   * - The samples included in a given sequence segment or sample group
+   * 
+   * UI requirements
+   * - ability to quickly change views between sample, sequence segment, or
+   *    sample group for order and "tag" management
+   * - The ability to drag and drop to facilitate re-ordering
+   * - The ability to add or remove "tags" (i.e, colored button icons
+   *    that symbolize a sample, sequence segment or sample group
+   *    categorization)
+   * - Filter and sort by sample, sequence segment or sample group
+   * - 
+   * 
+   * 
+   */
   static void SequenceProgressWidget(bool* p_open)
   {
     ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
@@ -215,6 +236,7 @@ namespace example
           // TODO: drop down for sample type
 
           // NOTE: each button should have an "x" that deletes the tag
+        ImGui::EndChild();
       ImGui::EndGroup();
 
       // TODO: add selected samples to plot widget
@@ -591,6 +613,10 @@ namespace example
     ImGui::End();
   } 
 
+  /**
+   * TODO: replace with an actual "workflow editor"
+   * See ImGui examples of how to do this
+   */
   static void WorkflowWidget(bool* p_open)
   {
     ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
@@ -716,10 +742,11 @@ namespace example
           // TODO: tooltip description of each processing step
             ImGui::NextColumn();
           }
-          ImGui::Checkbox("a", &rows_enabled[i]);
+          ImGui::Checkbox("", &rows_enabled[i]);
           ImGui::NextColumn();
         }
       }
+      ImGui::Dummy(ImVec2(0,0));
       ImGui::EndChild();
 
       // Bottom:

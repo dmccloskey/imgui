@@ -171,7 +171,7 @@ namespace ImGui
          */
         void ShowXAxisTop(const char* axis_title, const ImFont* axis_title_font, 
             const float& axis_title_font_size, const ImU32& axis_title_font_col,
-            const int& axis_ticks, const char* axis_tick_format,
+            const int& axis_ticks, const char* axis_tick_labels[], const char* axis_tick_format,
             const float& axis_thickness, const ImU32& axis_col,
             const ImFont* axis_tick_font, const float& axis_tick_font_size, 
             const ImU32& axis_font_col)
@@ -218,7 +218,7 @@ namespace ImGui
          */
         void ShowXAxisBottom(const char* axis_title, const ImFont* axis_title_font, 
             const float& axis_title_font_size, const ImU32& axis_title_font_col,
-            const int& axis_ticks, const char* axis_tick_format,
+            const int& axis_ticks, const char* axis_tick_labels[], const char* axis_tick_format,
             const float& axis_thickness, const ImU32& axis_col,
             const ImFont* axis_tick_font, const float& axis_tick_font_size, 
             const ImU32& axis_font_col)
@@ -229,20 +229,37 @@ namespace ImGui
 
             // Tick major
             const ImVec2 tick_size = CalcTextSize(axis_title, NULL, true);
-            const float tick_height_spacing = tick_size.y*0.8;
-            
-            const Ta tick_span = (scales_x_->GetDomainMax() - scales_x_->GetDomainMin())/axis_ticks;
-            
-            for (int n=0; n<=axis_ticks; ++n)
-            {
-                // Tick label
-                char tick_label[64];
-                const Ta tick_value = tick_span * n + scales_x_->GetDomainMin();
+            const float tick_height_spacing = tick_size.y*0.8; 
 
-                // Tick Position
-                sprintf(tick_label, axis_tick_format, tick_value);
-                ImVec2 tick_pos = ImVec2(scales_x_->Scale(tick_value), scales_y_->GetRangeMin() + tick_size.y); // interpolate the position
-                window->DrawList->AddText(axis_tick_font, axis_tick_font_size, tick_pos, axis_font_col, tick_label);
+            if (axis_tick_labels!=NULL)
+            {
+                const Ta tick_span = (scales_x_->GetRangeMax() - scales_x_->GetRangeMin())/axis_ticks;            
+                for (int n=0; n<axis_ticks-1; ++n)
+                {
+                    // Tick label
+                    char tick_label[64];
+                    const Ta tick_pos_x = tick_span * n + tick_span;
+
+                    // Tick Position
+                    sprintf(tick_label, axis_tick_format, axis_tick_labels[n]);
+                    ImVec2 tick_pos = ImVec2(tick_pos_x, scales_y_->GetRangeMin() + tick_size.y); // interpolate the position
+                    window->DrawList->AddText(axis_tick_font, axis_tick_font_size, tick_pos, axis_font_col, tick_label);
+                }
+            }
+            else
+            {
+                const Ta tick_span = (scales_x_->GetDomainMax() - scales_x_->GetDomainMin())/axis_ticks;            
+                for (int n=0; n<=axis_ticks; ++n)
+                {
+                    // Tick label
+                    char tick_label[64];
+                    const Ta tick_value = tick_span * n + scales_x_->GetDomainMin();
+
+                    // Tick Position
+                    sprintf(tick_label, axis_tick_format, tick_value);
+                    ImVec2 tick_pos = ImVec2(scales_x_->Scale(tick_value), scales_y_->GetRangeMin() + tick_size.y); // interpolate the position
+                    window->DrawList->AddText(axis_tick_font, axis_tick_font_size, tick_pos, axis_font_col, tick_label);
+                }
             }
 
             // Axis
@@ -261,10 +278,15 @@ namespace ImGui
          * @brief Draw Left Y Axis
          * 
          * @param TODO...
+         * @param axis_ticks The number of axis ticks to show
+         *      [min, max] if axis_tick_labels are not specified (e.g., scatter or line plot)
+         *      [min + span, max - span] if axis_tick_labels are specified (e.g., bar plot)
+         * @param axis_tick_labels labels to use (optional)
          */
         void ShowYAxisLeft(const char* axis_title, const ImFont* axis_title_font, 
             const float& axis_title_font_size, const ImU32& axis_title_font_col,
-            const int& axis_ticks, const char* axis_tick_format,
+            const Tc& axis_tick_min, const Tc& axis_tick_max, const Tc& axis_tick_span, const char* axis_tick_format,
+            const Tc* axis_tick_pos, const char* axis_tick_labels[], 
             const float& axis_thickness, const ImU32& axis_col,
             const ImFont* axis_tick_font, const float& axis_tick_font_size, 
             const ImU32& axis_font_col)
@@ -276,19 +298,35 @@ namespace ImGui
             // Tick major
             const ImVec2 tick_size = CalcTextSize(axis_title, NULL, true);
             const float tick_height_spacing = tick_size.y*0.8;
-            
-            const Ta tick_span = (scales_y_->GetDomainMax() - scales_y_->GetDomainMin())/axis_ticks;
-            
-            for (int n=0; n<=axis_ticks; ++n)
-            {
-                // Tick label
-                char tick_label[64];
-                const Ta tick_value = tick_span * n + scales_y_->GetDomainMin();
 
-                // Tick Position
-                sprintf(tick_label, axis_tick_format, tick_value);
-                ImVec2 tick_pos = ImVec2(scales_x_->GetRangeMin() - tick_size.y, scales_y_->Scale(tick_value)); // interpolate the position
-                window->DrawList->AddText(axis_tick_font, axis_tick_font_size, tick_pos, axis_font_col, tick_label);
+            if (axis_tick_labels!=NULL && axis_tick_pos!=NULL)
+            {         
+                for (int n=0; n < IM_ARRAYSIZE(axis_tick_pos); ++n)
+                {
+                    // Tick label
+                    char tick_label[64];
+                    sprintf(tick_label, axis_tick_format, axis_tick_labels[n]);
+
+                    // Tick Position
+                    ImVec2 tick_pos = ImVec2(scales_x_->GetRangeMin() - tick_size.y, scales_y_->Scale(axis_tick_pos[n])); // interpolate the position
+                    window->DrawList->AddText(axis_tick_font, axis_tick_font_size, tick_pos, axis_font_col, tick_label);
+                }
+            }
+            else
+            {
+                Tc tick_value = axis_tick_min;           
+                while (tick_value <= axis_tick_max)
+                {
+                    // Tick label
+                    char tick_label[64];
+
+                    // Tick Position
+                    sprintf(tick_label, axis_tick_format, tick_value);
+                    ImVec2 tick_pos = ImVec2(scales_x_->GetRangeMin() - tick_size.y, scales_y_->Scale(tick_value)); // interpolate the position
+                    window->DrawList->AddText(axis_tick_font, axis_tick_font_size, tick_pos, axis_font_col, tick_label);
+
+                    tick_value += axis_tick_span;
+                }
             }
 
             // Axis
@@ -311,7 +349,7 @@ namespace ImGui
          */
         void ShowYAxisRight(const char* axis_title, const ImFont* axis_title_font, 
             const float& axis_title_font_size, const ImU32& axis_title_font_col,
-            const int& axis_ticks, const char* axis_tick_format,
+            const int& axis_ticks, const char* axis_tick_labels[], const char* axis_tick_format,
             const float& axis_thickness, const ImU32& axis_col,
             const ImFont* axis_tick_font, const float& axis_tick_font_size, 
             const ImU32& axis_font_col)
@@ -524,6 +562,85 @@ namespace ImGui
                     if (labels != NULL)
                         window->DrawList->AddText(label_font, label_font_size, ImVec2(centre_scaled_x, centre_scaled_y), label_font_col, labels[n]);
                     t0 += 1;
+                }
+
+            //TODO: add zoom
+            }
+        };
+    };
+
+    template<class Ta, class Tc>
+    class ImBarPlot2D: public ImPlot2D<Ta, Tc>
+    {
+    public:
+        // void ShowPlot() override; ?
+        /**
+         * @brief Shows the plot on the figure
+         * 
+         * @param x_data X data of length n (ordered from lowest to highest)
+         * @param y_data y data of length n (ordered from lowest to highest)
+         * @param r_data radius lengths of each point of length n (matching order of x/y_data)
+         * @param marker_stroke_col circle (or other symbol) stroke color
+         * @param marker_stroke_width circle (or other symbol) stroke width
+         * @param marker_fill col circle (or other symbol) fill color
+         * @param line_stroke_col line stroke color
+         * @param line_stroke_width line stroke width
+         * @param line_stroke_dash spacing of the dash
+         * @param line_stroke_gap spacing between dashes
+         * @param line_interp "None" for a straight line and "Bezier" for a curved line
+         * @param labels Label for each data point of length n (matching order of x/y_data)
+         * @param label_font Label font
+         * @param label_font_col Label font color
+         * @param label_font_size Label font size
+         * @param dx1 Upper x data error of length n (matching order of x/y_data)
+         * ...
+         */
+        void ShowPlot(const float x_offset, const Tc* y_data, 
+            const float bar_width, const Tc* bar_bottoms, const int& n_data,
+            const ImU32& bar_stroke_col, const float& bar_stroke_width,
+            const ImU32& bar_fill_col, const ImU32& bar_hovered_col,
+            const char* series, const char* labels[], 
+            const ImFont* label_font, const ImU32& label_font_col,
+            const float& label_font_size,
+            const float* dy1, const float* dy2)
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImGuiContext& g = *GImGui;
+
+            if (n_data > 0)
+            {
+                const float bar_span = (scales_x_->GetRangeMax() - scales_x_->GetRangeMin())/n_data;   
+                for (int n = 0; n < n_data; ++n)
+                {
+                    // Bars
+                    const ImVec2 bar_BL = ImVec2(scales_x_->GetRangeMin() + n*bar_span + x_offset,
+                        scales_y_->GetRangeMin() + scales_y_->Scale(bar_bottoms[n]));
+                    const ImVec2 bar_TR = ImVec2(scales_x_->GetRangeMin() + n*bar_span + x_offset,
+                        scales_y_->GetRangeMin() + scales_y_->Scale(bar_bottoms[n]) + scales_y_->Scale(y_data[n]));
+                    window->DrawList->AddRectFilled(bar_BL, bar_TR, bar_fill_col);
+
+                    // Tooltip on hover
+                    if (bar_TR.x <= g.IO.MousePos.x && 
+                    bar_BL.x >= g.IO.MousePos.x &&
+                    bar_TR.y >= g.IO.MousePos.y && 
+                    bar_BL.y <= g.IO.MousePos.y)
+                    {
+                        SetTooltip("%s\n%s: %8.4g", series, "y", y_data[n]);
+                        window->DrawList->AddRectFilled(bar_BL, bar_TR, bar_hovered_col);
+                    }
+
+                    // labels
+                    if (labels != NULL)
+                    {                        
+                        const float centre_scaled_x = n*bar_span + x_offset + scales_x_->GetRangeMin() * 0.5;
+                        const float centre_scaled_y = scales_y_->GetRangeMin() - scales_y_->Scale(bar_bottoms[n]) - scales_y_->Scale(y_data[n]);
+                        window->DrawList->AddText(label_font, label_font_size, ImVec2(centre_scaled_x, centre_scaled_y), label_font_col, labels[n]);
+                    }
+
+                    // Error bars
                 }
 
             //TODO: add zoom

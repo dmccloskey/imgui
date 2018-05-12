@@ -78,33 +78,32 @@ int main(int, char**)
         }
         ImGui_ImplSdlGL2_NewFrame(window);
 
-        // 0. Common data and scales
-        // Data
-        const float y_data1[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
-        const float y_data2[] = {2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
-        const float y_data3[] = {6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
-        const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
-
-        const float r_data[] = {5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 6.0f};
-        const char* labels[] = {"1", "2", "3", "4", "5", "6", "7"};
-        const char* series[] = {"series1", "series2", "series3"};
-        const int n_data = 7;
-
-        // Data scales         
-        ImGui::ImLinearScales<float, float> scales_x;   
-        ImGui::ImLinearScales<float, float> scales_y;   
-        scales_x.SetDomain(0.0f, 6.0f);
-        scales_y.SetDomain(0.0f, 6.0f);
-
-        // Color scales            
-        ImGui::ImLinearScales<float, ImVec4> scales_color; 
-        scales_color.SetDomain(0.0f, 2.0f); 
-        scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
-
         // 1. Scatter plot demo
         {
-            ImGui::SetNextWindowPos(ImVec2(0,0));
-            ImGui::SetNextWindowSize(io.DisplaySize);
+            // Data
+            const float y_data1[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+            const float y_data2[] = {2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
+            const float y_data3[] = {6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
+            const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+
+            const float r_data[] = {5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 6.0f};
+            const char* labels[] = {"1", "2", "3", "4", "5", "6", "7"};
+            const char* series[] = {"series1", "series2", "series3"};
+            const int n_data = 7;
+
+            // Data scales         
+            ImGui::ImLinearScales<float, float> scales_x;   
+            ImGui::ImLinearScales<float, float> scales_y;   
+            scales_x.SetDomain(0.0f, 6.0f);
+            scales_y.SetDomain(0.0f, 6.0f);
+
+            // Color scales            
+            ImGui::ImLinearScales<float, ImVec4> scales_color; 
+            scales_color.SetDomain(0.0f, 2.0f); 
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
+
+            // ImGui::SetNextWindowPos(ImVec2(0,0));
+            // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
             ImGui::Begin("Scatter plot", &show_plot_test, NULL);
 
@@ -143,22 +142,24 @@ int main(int, char**)
             // Axes
             plotter.ShowXAxisBottom(
                 "x-axis bottom", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
-                10, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                10, NULL, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
                 io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
 
             plotter.ShowYAxisLeft(
                 "y-axis left", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
-                10, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                0.0f, 6.0f, 1.0f, "%.2f",
+                NULL, NULL,
+                2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
                 io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
 
             // plotter.ShowXAxisTop(
             //     "x-axis top", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
-            //     10, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+            //     10, NULL, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
             //     io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
 
             // plotter.ShowYAxisRight(
             //     "y-axis right", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
-            //     10, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+            //     10, NULL, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
             //     io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
 
             // Legend
@@ -174,10 +175,103 @@ int main(int, char**)
             ImGui::End();
         }
 
-        // {
-        //     bool show_metrics_window = true;
-        //     ImGui::ShowMetricsWindow(&show_metrics_window);
-        // }
+        // 2. Bar plot demo
+        {
+            // Data
+            const float y_data1[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+            const float y_data2[] = {2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
+            const float y_data3[] = {6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
+            const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+
+            const char* labels[] = {"1", "2", "3", "4", "5", "6", "7"};
+            const char* series[] = {"series1", "series2", "series3"};
+            const int n_data = 7;
+
+            float y_data1_bottoms[7], y_data2_bottoms[7], y_data3_bottoms[7];
+            for (int n=0; n<n_data; ++n)
+            {
+                y_data1_bottoms[n] = 0;
+                y_data2_bottoms[n] = y_data1[n];
+                y_data3_bottoms[n] = y_data1[n] + y_data2[n];
+            }
+
+            // Data scales         
+            ImGui::ImLinearScales<float, float> scales_x;   
+            ImGui::ImLinearScales<float, float> scales_y;   
+            scales_x.SetDomain(0.0f, 6.0f);
+            scales_y.SetDomain(0.0f, 6.0f);
+
+            // Color scales            
+            ImGui::ImLinearScales<float, ImVec4> scales_color; 
+            scales_color.SetDomain(0.0f, 2.0f); 
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
+            
+            // ImGui::SetNextWindowPos(ImVec2(0,0));
+            // ImGui::SetNextWindowSize(io.DisplaySize);
+            bool show_plot_test = true;
+            ImGui::Begin("Bar plot", &show_plot_test, NULL);
+
+            // Figure
+            ImGui::ImBarPlot2D<float, float> plotter;
+            plotter.SetScales(&scales_x, &scales_y);
+            plotter.ShowFigure(ImVec2(720, 720), 
+                100.0f, 100.0f, 100.0f, 100.0f,
+                "Bar Plot", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+
+            // Plot 1
+            ImU32 hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
+            plotter.ShowPlot(5.0f, y_data1, 
+                10.0f, y_data1_bottoms, n_data,
+                NULL, NULL,
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0)), hover_color,
+                series[0], labels,
+                io.FontDefault, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)), 12.0f,
+                NULL, NULL);
+            
+            // Plot 2
+            
+            // Plot 3
+
+            // Axes
+            plotter.ShowXAxisBottom(
+                "x-axis bottom", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                n_data, labels, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+
+            plotter.ShowYAxisLeft(
+                "y-axis left", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                NULL, NULL, NULL, "%.2f",
+                x_data, labels, 
+                2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+
+            // plotter.ShowXAxisTop(
+            //     "x-axis top", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+            //     10, NULL, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+            //     io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+
+            // plotter.ShowYAxisRight(
+            //     "y-axis right", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+            //     10, NULL, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+            //     io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+
+            // Legend
+            const ImU32 series_color[] = {
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0)),
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1)),
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2))
+            };
+            plotter.ShowLegend("TR", ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)), 
+                series, series_color, 3,
+                io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+
+            ImGui::End();
+        }
+
+        {
+            bool show_metrics_window = true;
+            ImGui::ShowMetricsWindow(&show_metrics_window);
+        }
 
         // Rendering
         glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);

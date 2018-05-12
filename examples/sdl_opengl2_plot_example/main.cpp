@@ -81,6 +81,8 @@ int main(int, char**)
         // 1. Show a simple window.
         // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets automatically appears in a window called "Debug".
         {
+            ImGui::SetNextWindowPos(ImVec2(0,0));
+            ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
             ImGui::Begin("Plot testing", &show_plot_test, NULL);
 
@@ -109,8 +111,8 @@ int main(int, char**)
             // Figure
             ImGui::ImScatterPlot2D<float, float> plotter;
             plotter.SetScales(&scales_x, &scales_y);
-            plotter.ShowFigure(ImVec2(520, 480), 
-                50.0f, 50.0f, 50.0f, 50.0f,
+            plotter.ShowFigure(ImVec2(720, 720), 
+                100.0f, 100.0f, 100.0f, 100.0f,
                 "Scatter Plot", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
 
             // Plot 1
@@ -133,11 +135,25 @@ int main(int, char**)
                 NULL, NULL, NULL, NULL);
 
             // Axes
-            plotter.ShowXAxisTop(
-                "x-axis top", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
-                10, "%2f", 20.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
-                io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
-            
+            plotter.ShowXAxisBottom(
+                "x-axis bottom", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                10, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+
+            plotter.ShowYAxisLeft(
+                "y-axis left", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                10, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+                io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+
+            // plotter.ShowXAxisTop(
+            //     "x-axis top", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+            //     10, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+            //     io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+
+            // plotter.ShowYAxisRight(
+            //     "y-axis right", io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+            //     10, "%.2f", 2.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)),
+            //     io.FontDefault, 12.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
 
             // Legend
             const ImU32 series_color[] = {
@@ -145,12 +161,17 @@ int main(int, char**)
                 ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1)),
                 ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2))
             };
-            plotter.ShowLegend("TR", 40.0f, 40.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)), 
+            plotter.ShowLegend("TR", ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)), 
                 series, series_color, 3,
                 io.FontDefault, 18.0f, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
 
             ImGui::End();
         }
+
+        // {
+        //     bool show_metrics_window = true;
+        //     ImGui::ShowMetricsWindow(&show_metrics_window);
+        // }
 
         // Rendering
         glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);

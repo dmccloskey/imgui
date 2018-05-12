@@ -138,9 +138,9 @@ namespace ImGui
 
             // Create the window
             const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(plot_size.x, plot_size.y));
-            const ImRect inner_bb_(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding);
-            const ImRect figure_bb_(ImVec2(inner_bb_.Min.x + margin_left, inner_bb_.Min.y + margin_top),
-                ImVec2(inner_bb_.Max.x - margin_right, inner_bb_.Max.y - margin_bottom));
+            const ImRect inner_bb(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding);
+            const ImRect figure_bb(ImVec2(inner_bb.Min.x + margin_left, inner_bb.Min.y + margin_top),
+                ImVec2(inner_bb.Max.x - margin_right, inner_bb.Max.y - margin_bottom));
             const ImRect total_bb(frame_bb.Min, frame_bb.Max);
             RenderFrame(frame_bb.Min, frame_bb.Max, GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
 
@@ -150,18 +150,22 @@ namespace ImGui
             {
                 // centered by default (add parameter for title position)
                 const ImVec2 title_pos(
-                    (inner_bb_.Max.x - inner_bb_.Min.x)*0.5f + title_size.x*0.5,
-                    inner_bb_.Min.y);
-                window->DrawList->AddText(title_font, title_font_size, title_pos, title_font_col, title);   
+                    (inner_bb.Max.x - inner_bb.Min.x)*0.5f + title_size.x*0.5,
+                    inner_bb.Min.y);
+                window->DrawList->AddText(title_font, title_font_size, title_pos, title_font_col, title);
             }
 
             // update scales range
-            scales_x_->SetRange(figure_bb_.Min.x, figure_bb_.Max.x);
-            scales_y_->SetRange(figure_bb_.Max.y, figure_bb_.Min.y);
+            scales_x_->SetRange(figure_bb.Min.x, figure_bb.Max.x);
+            scales_y_->SetRange(figure_bb.Max.y, figure_bb.Min.y);
         };
 
         /**
          * @brief Draw Top X Axis
+         * 
+         * TODO: add method to make nice round numbers for tick labels and spacing
+         * TODO: add option to orient tick labels
+         * TODO: fix shifting axis title
          * 
          * @param TODO...
          */
@@ -181,26 +185,29 @@ namespace ImGui
             const float tick_height_spacing = tick_size.y*0.8;
             
             const Ta tick_span = (scales_x_->GetDomainMax() - scales_x_->GetDomainMin())/axis_ticks;
-            for (int n=0; n<axis_ticks; ++n)
+            
+            for (int n=0; n<=axis_ticks; ++n)
             {
                 // Tick label
                 char tick_label[64];
-                const Ta tick_value = tick_span * n;
+                const Ta tick_value = tick_span * n + scales_x_->GetDomainMin();
 
                 // Tick Position
                 sprintf(tick_label, axis_tick_format, tick_value);
-                ImVec2 tick_pos = ImVec2(scales_x_->Scale(tick_value), figure_bb_.Min.y); // interpolate the position
+                ImVec2 tick_pos = ImVec2(scales_x_->Scale(tick_value), scales_y_->GetRangeMax() - tick_size.y); // interpolate the position
                 window->DrawList->AddText(axis_tick_font, axis_tick_font_size, tick_pos, axis_font_col, tick_label);
             }
 
             // Axis
-            window->DrawList->AddLine(ImVec2(figure_bb_.Min.x, figure_bb_.Min.y), ImVec2(figure_bb_.Max.x, figure_bb_.Min.y), axis_col, axis_thickness);
+            window->DrawList->AddLine(ImVec2(scales_x_->GetRangeMin(), scales_y_->GetRangeMax()),
+                ImVec2(scales_x_->GetRangeMax(), scales_y_->GetRangeMax()), axis_col, axis_thickness);
 
             // Axis title
             const ImVec2 title_size = CalcTextSize(axis_title, NULL, true);
             const float title_height_spacing = title_size.y*0.8;
-            ImVec2 title_pos = ImVec2((figure_bb_.Max.x - figure_bb_.Min.x)*0.5f + title_size.x*0.5f,
-                figure_bb_.Min.y - (title_size.y + tick_size.y + title_height_spacing + tick_height_spacing));
+            ImVec2 title_pos = ImVec2((scales_x_->GetRangeMax() - scales_x_->GetRangeMin())*0.5f + title_size.x*0.5f,
+                scales_y_->GetRangeMax() - (title_size.y + tick_size.y));
+                // scales_y_->GetRangeMax() - (title_size.y + tick_size.y + title_height_spacing + tick_height_spacing));
             window->DrawList->AddText(axis_title_font, axis_title_font_size, title_pos, axis_title_font_col, axis_title);
         };
 
@@ -214,7 +221,41 @@ namespace ImGui
             const int& axis_ticks, const char* axis_tick_format,
             const float& axis_thickness, const ImU32& axis_col,
             const ImFont* axis_tick_font, const float& axis_tick_font_size, 
-            const ImU32& axis_font_col);
+            const ImU32& axis_font_col)
+        {            
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            // Tick major
+            const ImVec2 tick_size = CalcTextSize(axis_title, NULL, true);
+            const float tick_height_spacing = tick_size.y*0.8;
+            
+            const Ta tick_span = (scales_x_->GetDomainMax() - scales_x_->GetDomainMin())/axis_ticks;
+            
+            for (int n=0; n<=axis_ticks; ++n)
+            {
+                // Tick label
+                char tick_label[64];
+                const Ta tick_value = tick_span * n + scales_x_->GetDomainMin();
+
+                // Tick Position
+                sprintf(tick_label, axis_tick_format, tick_value);
+                ImVec2 tick_pos = ImVec2(scales_x_->Scale(tick_value), scales_y_->GetRangeMin() + tick_size.y); // interpolate the position
+                window->DrawList->AddText(axis_tick_font, axis_tick_font_size, tick_pos, axis_font_col, tick_label);
+            }
+
+            // Axis
+            window->DrawList->AddLine(ImVec2(scales_x_->GetRangeMin(), scales_y_->GetRangeMin()),
+                ImVec2(scales_x_->GetRangeMax(), scales_y_->GetRangeMin()), axis_col, axis_thickness);
+
+            // Axis title
+            const ImVec2 title_size = CalcTextSize(axis_title, NULL, true);
+            const float title_height_spacing = title_size.y*0.8;
+            ImVec2 title_pos = ImVec2((scales_x_->GetRangeMax() - scales_x_->GetRangeMin())*0.5f + title_size.x*0.5f,
+                scales_y_->GetRangeMin() + (title_size.y + tick_size.y));
+            window->DrawList->AddText(axis_title_font, axis_title_font_size, title_pos, axis_title_font_col, axis_title);
+        };
 
         /**
          * @brief Draw Left Y Axis
@@ -226,7 +267,42 @@ namespace ImGui
             const int& axis_ticks, const char* axis_tick_format,
             const float& axis_thickness, const ImU32& axis_col,
             const ImFont* axis_tick_font, const float& axis_tick_font_size, 
-            const ImU32& axis_font_col);
+            const ImU32& axis_font_col)
+        {            
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            // Tick major
+            const ImVec2 tick_size = CalcTextSize(axis_title, NULL, true);
+            const float tick_height_spacing = tick_size.y*0.8;
+            
+            const Ta tick_span = (scales_y_->GetDomainMax() - scales_y_->GetDomainMin())/axis_ticks;
+            
+            for (int n=0; n<=axis_ticks; ++n)
+            {
+                // Tick label
+                char tick_label[64];
+                const Ta tick_value = tick_span * n + scales_y_->GetDomainMin();
+
+                // Tick Position
+                sprintf(tick_label, axis_tick_format, tick_value);
+                ImVec2 tick_pos = ImVec2(scales_x_->GetRangeMin() - tick_size.y, scales_y_->Scale(tick_value)); // interpolate the position
+                window->DrawList->AddText(axis_tick_font, axis_tick_font_size, tick_pos, axis_font_col, tick_label);
+            }
+
+            // Axis
+            window->DrawList->AddLine(ImVec2(scales_x_->GetRangeMin(), scales_y_->GetRangeMin()),
+                ImVec2(scales_x_->GetRangeMin(), scales_y_->GetRangeMax()), axis_col, axis_thickness);
+
+            // Axis title
+            const ImVec2 title_size = CalcTextSize(axis_title, NULL, true);
+            const float title_height_spacing = title_size.y*0.8;
+            ImVec2 title_pos = ImVec2(
+                scales_x_->GetRangeMin() - (title_size.y + tick_size.y),
+                (scales_y_->GetRangeMax() - scales_y_->GetRangeMin())*0.5f + title_size.y*0.5f);
+            window->DrawList->AddText(axis_title_font, axis_title_font_size, title_pos, axis_title_font_col, axis_title);
+        };
 
         /**
          * @brief Draw Right Y Axis
@@ -238,7 +314,42 @@ namespace ImGui
             const int& axis_ticks, const char* axis_tick_format,
             const float& axis_thickness, const ImU32& axis_col,
             const ImFont* axis_tick_font, const float& axis_tick_font_size, 
-            const ImU32& axis_font_col);
+            const ImU32& axis_font_col)
+        {            
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            // Tick major
+            const ImVec2 tick_size = CalcTextSize(axis_title, NULL, true);
+            const float tick_height_spacing = tick_size.y*0.8;
+            
+            const Ta tick_span = (scales_y_->GetDomainMax() - scales_y_->GetDomainMin())/axis_ticks;
+            
+            for (int n=0; n<=axis_ticks; ++n)
+            {
+                // Tick label
+                char tick_label[64];
+                const Ta tick_value = tick_span * n + scales_y_->GetDomainMin();
+
+                // Tick Position
+                sprintf(tick_label, axis_tick_format, tick_value);
+                ImVec2 tick_pos = ImVec2(scales_x_->GetRangeMax() + tick_size.y, scales_y_->Scale(tick_value)); // interpolate the position
+                window->DrawList->AddText(axis_tick_font, axis_tick_font_size, tick_pos, axis_font_col, tick_label);
+            }
+
+            // Axis
+            window->DrawList->AddLine(ImVec2(scales_x_->GetRangeMax(), scales_y_->GetRangeMin()),
+                ImVec2(scales_x_->GetRangeMax(), scales_y_->GetRangeMax()), axis_col, axis_thickness);
+
+            // Axis title
+            const ImVec2 title_size = CalcTextSize(axis_title, NULL, true);
+            const float title_height_spacing = title_size.y*0.8;
+            ImVec2 title_pos = ImVec2(
+                scales_x_->GetRangeMin() + (title_size.y + tick_size.y),
+                (scales_y_->GetRangeMax() - scales_y_->GetRangeMin())*0.5f + title_size.y*0.5f);
+            window->DrawList->AddText(axis_title_font, axis_title_font_size, title_pos, axis_title_font_col, axis_title);
+        };
 
         /**
          * @brief Draw X axis grid lines
@@ -257,8 +368,6 @@ namespace ImGui
         /**@brief Show a plot legend
          * 
          * @param pos Pos of the legend (TL, TR, BL, BR)
-         * @param width Width of the legend
-         * @param height Height of the legend
          * @param col Background color of the legend
          * @param series List of series labels
          * @param series_color List of series colors 
@@ -266,7 +375,7 @@ namespace ImGui
          * @param series_font_size Font size of the series labels
          * @param series_font_col Color of the series labels
          */
-        void ShowLegend(const char* pos, const float& width, const float& height, const ImU32& col, 
+        void ShowLegend(const char* pos, const ImU32& col, 
             const char* series[], const ImU32 series_color[], const int& n_series,
             const ImFont* series_font, const float& series_font_size, const ImU32& series_font_col)
         {
@@ -276,22 +385,44 @@ namespace ImGui
             if (window->SkipItems)
                 return;
 
-            ImVec2 legend_pos = figure_bb_.GetTR();
-            if (pos == "TL") legend_pos = figure_bb_.GetTL();
-            else if (pos == "TR") legend_pos = figure_bb_.GetTR();
-            else if (pos == "BR") legend_pos = figure_bb_.GetBR();
-            else if (pos == "BL") legend_pos = figure_bb_.GetBL();
+            ImVec2 legend_pos = ImVec2(scales_x_->GetRangeMax(), scales_y_->GetRangeMax()); //TR
+            if (pos == "TL") legend_pos = ImVec2(scales_x_->GetRangeMax(), scales_y_->GetRangeMin());
+            else if (pos == "TR") legend_pos = ImVec2(scales_x_->GetRangeMax(), scales_y_->GetRangeMax());
+            else if (pos == "BR") legend_pos = ImVec2(scales_x_->GetRangeMin(), scales_y_->GetRangeMax());
+            else if (pos == "BL") legend_pos = ImVec2(scales_x_->GetRangeMin(), scales_y_->GetRangeMin());
+
+
+            // Deduce the maximum text size
+            ImVec2 series_size = ImVec2(0.0f, 0.0f);
+            for (int n=0; n<n_series; ++n)
+            {
+                ImVec2 series_size_tmp = CalcTextSize(series[n], NULL, true);
+                if (series_size_tmp.x > series_size.x) series_size = series_size_tmp;
+            }
+
+            // Legend attributes     
+            const float series_spacing = 0.1*series_size.y;
+            const float box_length = 0.9*series_size.y;
+            const float height = n_series * series_size.y + n_series * series_spacing + series_spacing;
+            const float width = series_size.x + box_length + 1.0f + 6*series_spacing;
 
             // Draw box
             window->DrawList->AddRect(ImVec2(legend_pos.x, legend_pos.y), ImVec2(legend_pos.x + width, legend_pos.y + height), col);
 
             for (int n=0; n<n_series; ++n)
             {
+                const float start_y_pos = n*series_size.y + n*series_spacing + series_spacing;
+
                 // Draw box and color for each series
-                window->DrawList->AddRectFilled(ImVec2(legend_pos.x, legend_pos.y), ImVec2(legend_pos.x + 2.0f, legend_pos.y + 2.0f), series_color[n]); 
+                window->DrawList->AddRectFilled(
+                    ImVec2(legend_pos.x + series_spacing, legend_pos.y + start_y_pos),
+                    ImVec2(legend_pos.x + series_spacing + box_length, legend_pos.y + start_y_pos + box_length),
+                    series_color[n]); 
 
                 // Label colored box with series name
-                window->DrawList->AddText(series_font, series_font_size, ImVec2(legend_pos.x + 3.0f, legend_pos.y + 3.0f), series_font_col, series[n]);
+                window->DrawList->AddText(series_font, series_font_size,
+                    ImVec2(legend_pos.x + series_spacing + box_length + 1.0f, legend_pos.y + start_y_pos),
+                    series_font_col, series[n]);
 
             }
         };
@@ -311,8 +442,8 @@ namespace ImGui
 
     protected:
         ImVec2 plot_size_;
-        ImRect inner_bb_;
-        ImRect figure_bb_;        
+        ImRect inner_bb;
+        ImRect figure_bb;        
         ImScales<Ta, float>* scales_x_;
         ImScales<Tc, float>* scales_y_;
     };

@@ -441,9 +441,6 @@ namespace ImGui
         // virtual void ShowPlot() = 0; ? linking error
 
     protected:
-        ImVec2 plot_size_;
-        ImRect inner_bb;
-        ImRect figure_bb;        
         ImScales<Ta, float>* scales_x_;
         ImScales<Tc, float>* scales_y_;
     };
@@ -471,8 +468,12 @@ namespace ImGui
          * ...
          */
         void ShowPlot(const Ta* x_data, const Tc* y_data, const float* r_data, const int& n_data,
-            const ImU32& stroke_col, const float& stroke_width,
-            const ImU32& fill_col, const ImU32& hovered_col, const char* series, const char* labels[], 
+            const ImU32& marker_stroke_col, const float& marker_stroke_width,
+            const ImU32& marker_fill_col, const ImU32& marker_hovered_col, 
+            const ImU32& line_stroke_col, const float& line_stroke_width, 
+            const float& line_stroke_dash, const float& line_stroke_gap, 
+            const char* line_interp, 
+            const char* series, const char* labels[], 
             const ImFont* label_font, const ImU32& label_font_col,
             const float& label_font_size, const float* dx1, const float* dx2, const float* dy1, const float* dy2)
         {
@@ -491,7 +492,20 @@ namespace ImGui
                     const int v1_idx = (int)(t0 * n_data);
                     const float centre_scaled_x = scales_x_->Scale(x_data[n]);
                     const float centre_scaled_y = scales_y_->Scale(y_data[n]);
-                    window->DrawList->AddCircleFilled(ImVec2(centre_scaled_x, centre_scaled_y), r_data[n], fill_col, 12);
+                    window->DrawList->AddCircleFilled(ImVec2(centre_scaled_x, centre_scaled_y), r_data[n], marker_fill_col, 12);
+
+                    // Line
+                    if (n > 0 && strcmp(line_interp, "None") == 0)
+                    {
+                        window->DrawList->AddLine(
+                            ImVec2(scales_x_->Scale(x_data[n-1]), scales_y_->Scale(y_data[n-1])),
+                            ImVec2(scales_x_->Scale(x_data[n]), scales_y_->Scale(y_data[n])),
+                            line_stroke_col, line_stroke_width);
+                    }
+                    else if (n > 0 && strcmp(line_interp, "Bezier") == 0)
+                    {
+                        // TODO
+                    }
 
                     // Tooltip on hover
                     if (centre_scaled_x - r_data[n] <= g.IO.MousePos.x && 
@@ -500,7 +514,7 @@ namespace ImGui
                     centre_scaled_y + r_data[n] >= g.IO.MousePos.y)
                     {
                         SetTooltip("%s\n%s: %8.4g\n%s: %8.4g", series, "x", x_data[n], "y", y_data[n]);
-                        window->DrawList->AddCircleFilled(ImVec2(centre_scaled_x, centre_scaled_y), r_data[n], hovered_col, 12);
+                        window->DrawList->AddCircleFilled(ImVec2(centre_scaled_x, centre_scaled_y), r_data[n], marker_hovered_col, 12);
                     }
                     // labels
                     if (labels != NULL)

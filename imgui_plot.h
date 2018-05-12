@@ -456,10 +456,14 @@ namespace ImGui
          * @param x_data X data of length n (ordered from lowest to highest)
          * @param y_data y data of length n (ordered from lowest to highest)
          * @param r_data radius lengths of each point of length n (matching order of x/y_data)
-         * @param stroke_col circle (or other symbol) stroke color
-         * @param stroke_width circle (or other symbol) stroke width
-         * @param fill col circle (or other symbol) fill color
-         * @param hovered_col circle (or other symbol) hover color
+         * @param marker_stroke_col circle (or other symbol) stroke color
+         * @param marker_stroke_width circle (or other symbol) stroke width
+         * @param marker_fill col circle (or other symbol) fill color
+         * @param line_stroke_col line stroke color
+         * @param line_stroke_width line stroke width
+         * @param line_stroke_dash spacing of the dash
+         * @param line_stroke_gap spacing between dashes
+         * @param line_interp "None" for a straight line and "Bezier" for a curved line
          * @param labels Label for each data point of length n (matching order of x/y_data)
          * @param label_font Label font
          * @param label_font_col Label font color

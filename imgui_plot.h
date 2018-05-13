@@ -411,12 +411,6 @@ namespace ImGui
         float outer_radius = 100.0f; ///< controls the size of the pie
     };
 
-    /**
-    * @brief Pie plots.  The orientiation of the bars is specified
-    *   by the `orientiation` parameter.  Stacked or Staggered bar
-    *   representations are controlled manually by the user via
-    *   the `bar_bottoms` and `bar_positions` parameters.    *
-    */
     template<class Ta, class Tb>
     class ImPie
     {

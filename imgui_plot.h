@@ -1,8 +1,10 @@
-// # Low level plotting features and components
+// # Low level plotting features and components for creating basic to advanced plots and charts
+
 #include "imgui.h"
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
-#include <iostream>
+
+#include <iostream> //delete when finished debugging
 
 namespace ImGui
 {
@@ -22,12 +24,6 @@ namespace ImGui
     // static inline int*      ImQuaBSerp(int a, int b, float t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler
     // static inline float*    ImQuaBSerp(float a, float b, float t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler
     // static inline ImVec4*   ImQuaBSerp(const ImVec4& a, const ImVec4& b, const ImVec4& t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler used for colors
-
-    // ## Plot legends and other features
-
-    struct ImColorBar
-    {
-    };
 
     // ## Scales
     template<class Ta, class Tb>
@@ -61,7 +57,6 @@ namespace ImGui
         {
             const Ta tx = (t - domain_min_)/(domain_max_ - domain_min_);
             const Tb ty = ImLerp(range_min_, range_max_, tx);
-            // printf("tx (%f,%f), ty(%f,%f)", tx.x, tx.y, ty.x, ty.y);
             return ty;
         };
         // void    Pow();
@@ -81,16 +76,366 @@ namespace ImGui
         // void    Point();
     };
 
-    // ## Axes
-    class ImAxes
+    
+    // ## Plot element
+    struct ImPlotProperties
+    {
+        ImVec2 plot_size = ImVec2(480.0f, 480.0f);        
+        float margin_bottom = 50.0f;
+        float margin_top = 50.0f; 
+        float margin_left = 50.0f;
+        float margin_right = 50.0f;
+        char* title = NULL;
+        ImFont* title_font = NULL;
+        float title_font_size = 18.0f;
+        ImU32 title_font_col = NULL;
+    };
+
+    template<class Ta, class Tb>
+    class ImPlot
     {
     public:
-        void ShowAxesTop(char* title, float x_tick_major, float x_tick_minor);
-        void ShowAxesBottom(char* title, float x_tick_major, float x_tick_minor);
-        void ShowAxesLeft(char* title, float y_tick_major, float y_tick_minor);
-        void ShowAxesRight(char* title, float y_tick_major, float y_tick_minor);
-        void ShowXAxesGridLines();
-        void ShowYAxesGridLines();
+        /**
+         * @brief Draw the figure with an optional title
+         * 
+         */
+        void DrawFigure();
+
+        void SetProperties(ImPlotProperties& properties){properties_ = properties;}
+        void SetScales(ImScales<Ta, float>* scales_x, ImScales<Tb, float>* scales_y){scales_x_ = scales_x; scales_y_ = scales_y;}
+        ImScales<Ta, float>* GetScalesX(){return scales_x_;}
+        ImScales<Tb, float>* GetScalesY(){return scales_y_;}
+
+    protected:
+        ImScales<Ta, float>* scales_x_;
+        ImScales<Tb, float>* scales_y_;
+        ImPlotProperties properties_;
+    };
+
+    // ## Axes
+    struct ImAxisProperties
+    {
+        char* axis_title = NULL;
+        ImFont* axis_title_font = NULL;
+        float axis_title_font_size = NULL;
+        ImU32 axis_title_font_col = NULL;
+        char* axis_tick_format = "%4.2f"; ///< string format
+        float axis_thickness = 1.0f;
+        ImU32 axis_col = NULL;
+        ImFont* axis_tick_font = NULL;
+        float axis_tick_font_size = 12.0f; 
+        ImU32 axis_font_col = NULL;
+    };
+
+    template<class Ta, class Tb>
+    class ImAxis
+    {
+    public:
+        /**
+        * @brief Draw X axis
+        * 
+        * @param figure The figure to draw on
+        * @param orientation Options are Top, Bottom
+        * @param x_data
+        * @param y_data
+        * @param n_data
+        * @param axis_tick_min Minimum axis tick value
+        * @param axis_tick_max Maximum axis tick value
+        * @param axis_tick_span Spacing between axis ticks
+        *
+        */
+        void DrawXAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
+            const Ta* x_data, const Tb* y_data, const int& n_data,
+            const Ta& axis_tick_min, const Ta& axis_tick_max, const Ta& axis_tick_span);
+
+        /**
+        * @brief Draw X axis
+        * 
+        * @param figure The figure to draw on
+        * @param orientation Options are Top, Bottom
+        * @param x_data
+        * @param y_data
+        * @param n_data
+        * @param axis_tick_pos Positions of the axis ticks
+        * @param axis_tick_labels Labels of the axis ticks
+        *
+        */
+        void DrawXAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
+            const Ta& x_data, const Tb& y_data, const int& n_data,
+            const Ta* axis_tick_pos, const char* axis_tick_labels[]);
+
+        /**
+        * @brief Draw Y axis
+        * 
+        * @param figure The figure to draw on
+        * @param orientation Options are Left, Right
+        * @param x_data
+        * @param y_data
+        * @param n_data
+        * @param axis_tick_min Minimum axis tick value
+        * @param axis_tick_max Maximum axis tick value
+        * @param axis_tick_span Spacing between axis ticks
+        *
+        */
+        void DrawYAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
+            const Ta& x_data, const Tb& y_data, const int& n_data,
+            const Tb& axis_tick_min, const Tb& axis_tick_max, const Tb& axis_tick_span);
+
+        /**
+        * @brief Draw Y axis
+        * 
+        * @param figure The figure to draw on
+        * @param orientation Options are Left, Right
+        * @param x_data
+        * @param y_data
+        * @param n_data
+        * @param axis_tick_pos Positions of the axis ticks
+        * @param axis_tick_labels Labels of the axis ticks
+        *
+        */
+        void DrawYAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
+            const Ta& x_data, const Tb& y_data, const int& n_data,
+            const Tb* axis_tick_pos, const char* axis_tick_labels[]);
+        
+        /**
+        * @brief Draw Gridlines
+        * 
+        * @param figure The figure to draw on
+        * @param orientation Options are vertical, horizontal
+        *
+        */
+        void DrawGridLines(ImPlot<Ta, Tb>& figure, const char* orientation);
+        
+        void SetProperties(ImAxisProperties& properties){properties_ = properties;}
+
+    private:
+        ImAxisProperties properties_;
+    };
+    
+    // ## Plot legends and other features
+    struct ImColorBarProperties
+    {
+        // TODO
+    };
+
+    struct ImLegendProperties
+    {
+        ImU32 stroke_col = NULL;
+        float stroke_width = 1.0f;
+        ImU32 fill_col = NULL; ///< Background color of the legend
+        char* series = NULL; ///< List of series labels
+        ImU32* series_color = NULL; ///< List of series colors 
+        int n_series = 0;
+        ImFont* series_font = NULL; ///< Font type for series labels
+        float series_font_size = NULL; ///< Font size of the series labels
+        ImU32 series_font_col = NULL; ///< Color of the series labels
+    };
+
+    template<class Ta, class Tb>
+    class ImLegend
+    {
+    public:
+        
+        /**@brief Show a plot legend
+         * 
+         * @param figure The figure to draw on
+         * @param pos Pos of the legend (TL, TR, BL, BR)
+         * @param col Background color of the legend
+         * @param series List of series labels
+         * @param series_color List of series colors 
+         */
+        void ShowLegend(ImPlot<Ta, Tb>& figure, const char* pos, 
+            const char* series[], const ImU32 series_color[], const int& n_series);
+
+        void SetProperties(ImLegendProperties& properties){properties_ = properties;}
+
+    private:
+        ImLegendProperties properties_;
+    };
+
+    // ## Error Bars
+    struct ImErrorBarProperties
+    {
+        ImU32 error_bar_stroke_col = 1.0f;
+        float error_bar_stroke_width = 1.0f;
+        char* error_bar_cap_style = "Straight"; ///< Options are "Straight", "Circular"
+        float error_bar_cap_width = 4.0f;
+    };
+
+    template<class Ta, class Tb>
+    class ImErrorBar
+    {
+    public:
+        /**
+        * @brief Draw Error Bars
+        * 
+        * @param figure The figure to draw on
+        * @param dx1 Upper error bar lengths
+        * @param dx2 Lower error bar lengths
+        *
+        */
+        void DrawErrorBars(ImPlot<Ta, Tb>& figure,
+            const Ta* x_data, const Tb* y_data, const int& n_data,
+            const Ta* dx1, const Ta* dx2);
+
+        /**
+        * @brief Draw Error Bars
+        * 
+        * @param figure The figure to draw on
+        * @param dy1 Upper error bar lengths
+        * @param dy2 Lower error bar lengths
+        *
+        */
+        void DrawErrorBars(ImPlot<Ta, Tb>& figure,
+            const Ta* x_data, const Tb* y_data, const int& n_data,
+            const Tb* dy1, const Tb* dy2);
+        
+        void SetProperties(ImErrorBarProperties& properties){properties_ = properties;}
+
+    private:
+        ImErrorBarProperties properties_;
+    };
+
+    // ## Markers (for e.g., scatter plot)
+    struct ImMarkerProperties
+    {
+
+    };
+
+    template<class Ta, class Tb>
+    class ImMarkers
+    {
+    public:
+        /**
+        * @brief Draw Markers
+        * 
+        * @param figure The figure to draw on
+        * @param x_data
+        * @param y_data
+        * @param r_data Radius of the markers
+        * @param n_data
+        *
+        */
+        void DrawMarkers(ImPlot<Ta, Tb>& figure,
+            const Ta* x_data, const Tb* y_data, const float* r_data, const int& n_data);
+
+        void SetProperties(ImMarkerProperties& properties){properties_ = properties;}
+    private:
+        ImMarkerProperties properties_;
+    };
+
+    // ## Lines (for e.g., line plot)
+    struct ImLineProperties
+    {
+
+    };
+
+    template<class Ta, class Tb>
+    class ImLines
+    {
+    public:
+        /**
+        * @brief Draw Lines
+        * 
+        * @param figure The figure to draw on
+        * @param x_data
+        * @param y_data
+        * @param n_data
+        *
+        */
+        void DrawLines(ImPlot<Ta, Tb>& figure,
+            const Ta* x_data, const Tb* y_data, const int& n_data);
+
+        void SetProperties(ImLineProperties& properties){properties_ = properties;}
+    private:
+        ImLineProperties properties_;
+    };
+
+    // ## Bars (for e.g., bar plot)
+    struct ImBarProperties
+    {
+        float bar_width = 10.0f;
+        ImU32 bar_stroke_col = NULL;
+        float bar_stroke_width = 1.0f;
+        ImU32 bar_fill_col = NULL;
+        ImU32 bar_hovered_col = NULL;
+        ImFont* label_font = NULL;
+        ImU32 label_font_col = NULL;
+        float label_font_size = 12.0f;
+
+    };
+
+    /**
+    * @brief Bar plots.  The orientiation of the bars is specified
+    *   by the `orientiation` parameter.  Stacked or Staggered bar
+    *   representations are controlled manually by the user via
+    *   the `bar_bottoms` and `bar_offset` parameters.
+    */
+    template<class Ta, class Tb>
+    class ImBars
+    {
+    public:
+        /**
+        * @brief Draw vertical Bars
+        * 
+        * @param figure The figure to draw on
+        * @param y_data
+        * @param n_data
+        *
+        */
+        void DrawBars(ImPlot<Ta, Tb>& figure,
+            const Tb* y_data, const int& n_data,
+            const Ta& bar_offset, const Tb* bar_bottoms);
+
+        /**
+        * @brief Draw horizontal Bars
+        * 
+        * @param figure The figure to draw on
+        * @param y_data
+        * @param n_data
+        *
+        */
+        void DrawBars(ImPlot<Ta, Tb>& figure,
+            const Ta* x_data, const int& n_data,
+            const Tb& bar_offset, const Ta* bar_bottoms);
+
+        void SetProperties(ImBarProperties& properties){properties_ = properties;}
+    private:
+        ImBarProperties properties_;
+    };
+
+    // ## Pie (for e.g., pie or donught plot)
+    struct ImPieProperties
+    {
+        float inner_radius = 0.0f; ///< change to create a donught plot
+        float outer_radius = 100.0f; ///< controls the size of the pie
+    };
+
+    /**
+    * @brief Pie plots.  The orientiation of the bars is specified
+    *   by the `orientiation` parameter.  Stacked or Staggered bar
+    *   representations are controlled manually by the user via
+    *   the `bar_bottoms` and `bar_positions` parameters.    *
+    */
+    template<class Ta, class Tb>
+    class ImPie
+    {
+    public:
+        /**
+        * @brief Draw Pie
+        * 
+        * @param figure The figure to draw on
+        * @param x_data
+        * @param y_data
+        * @param n_data
+        *
+        */
+        void DrawPie(ImPlot& figure,
+            const Ta* x_data, const Tb* y_data, const int& n_data);
+
+        void SetProperties(ImPieProperties& properties){properties_ = properties;}
+    private:
+        ImPieProperties properties_;
     };
 
     // # High level plotting functions
@@ -105,7 +450,7 @@ namespace ImGui
     // - Pie
     // - Area (stacked)
     // - Heatmap
-    // - Histogram (densiting and binning)
+    // - Histogram (density and binning)
     // ### Advanced
     // - Contour
     // - Stem

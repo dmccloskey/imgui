@@ -75,7 +75,6 @@ namespace ImGui
         // void    Round();
         // void    Point();
     };
-
     
     // ## Plot element
     struct ImPlotProperties
@@ -105,6 +104,7 @@ namespace ImGui
         void SetScales(ImScales<Ta, float>* scales_x, ImScales<Tb, float>* scales_y){scales_x_ = scales_x; scales_y_ = scales_y;}
         ImScales<Ta, float>* GetScalesX(){return scales_x_;}
         ImScales<Tb, float>* GetScalesY(){return scales_y_;}
+        ImGuiWindow* GetCurrentWindow(){return GetCurrentWindow();}
 
     protected:
         ImScales<Ta, float>* scales_x_;
@@ -164,6 +164,9 @@ namespace ImGui
             const Ta& x_data, const Tb& y_data, const int& n_data,
             const Ta* axis_tick_pos, const char* axis_tick_labels[]);
 
+        void _DrawXAxisAxis(ImPlot<Ta, Tb>& figure, const char* orientation);
+        void _DrawXAxisTitle(ImPlot<Ta, Tb>& figure, const char* orientation);
+
         /**
         * @brief Draw Y axis
         * 
@@ -196,6 +199,9 @@ namespace ImGui
         void DrawYAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
             const Ta& x_data, const Tb& y_data, const int& n_data,
             const Tb* axis_tick_pos, const char* axis_tick_labels[]);
+
+        void _DrawYAxisAxis(ImPlot<Ta, Tb>& figure, const char* orientation);
+        void _DrawYAxisTitle(ImPlot<Ta, Tb>& figure, const char* orientation);
         
         /**
         * @brief Draw Gridlines
@@ -296,10 +302,44 @@ namespace ImGui
         ImErrorBarProperties properties_;
     };
 
+    // ## Labels (for e.g., scatter plot)
+    struct ImLabelProperties
+    {
+        ImFont* label_font = NULL;  ///< Label font
+        ImU32 label_font_col = NULL;  ///< Label font color
+        float label_font_size = 12.0f;  ///< Label font size
+        ImVec2 label_offset_pos = ImVec2(0.0f, 0.0f); ///< Offset position of the label
+    };
+
+    template<class Ta, class Tb>
+    class ImLabels
+    {
+    public:
+        /**
+        * @brief Draw Labels
+        * 
+        * @param figure The figure to draw on
+        * @param x_data
+        * @param y_data
+        * @param n_data
+        * @param labels Label for each data point of length n (matching order of x/y_data)
+        *
+        */
+        void DrawLabels(ImPlot<Ta, Tb>& figure,
+            const Ta* x_data, const Tb* y_data, const int& n_data, const char* labels[]);
+
+        void SetProperties(ImLabelProperties& properties){properties_ = properties;}
+    private:
+        ImLabelProperties properties_;
+    };
+
     // ## Markers (for e.g., scatter plot)
     struct ImMarkerProperties
     {
-
+        ImU32 marker_stroke_col = NULL;  ///< circle (or other symbol) stroke color
+        float marker_stroke_width = 1.0f;  ///< circle (or other symbol) stroke width
+        ImU32 marker_fill_col = NULL;  ///< circle (or other symbol) fill color
+        ImU32 marker_hovered_col = NULL;  ///< circle (or other symbol) fill color on hover
     };
 
     template<class Ta, class Tb>
@@ -314,10 +354,12 @@ namespace ImGui
         * @param y_data
         * @param r_data Radius of the markers
         * @param n_data
+        * @param series Name of the marker series (used for tooltip)
         *
         */
         void DrawMarkers(ImPlot<Ta, Tb>& figure,
-            const Ta* x_data, const Tb* y_data, const float* r_data, const int& n_data);
+            const Ta* x_data, const Tb* y_data, const float* r_data, const int& n_data,
+            const char* series);
 
         void SetProperties(ImMarkerProperties& properties){properties_ = properties;}
     private:
@@ -327,7 +369,11 @@ namespace ImGui
     // ## Lines (for e.g., line plot)
     struct ImLineProperties
     {
-
+        ImU32 line_stroke_col = NULL;  ///< line stroke color
+        float line_stroke_width = 1.5f;  ///< line stroke width
+        float line_stroke_dash = 0.0f;  ///< spacing of the dash
+        float line_stroke_gap = 0.0f;   ///< spacing between dashes
+        const char* line_interp = "None";  ///< "None" for a straight line and "Bezier" for a curved line
     };
 
     template<class Ta, class Tb>
@@ -359,10 +405,6 @@ namespace ImGui
         float bar_stroke_width = 1.0f;
         ImU32 bar_fill_col = NULL;
         ImU32 bar_hovered_col = NULL;
-        ImFont* label_font = NULL;
-        ImU32 label_font_col = NULL;
-        float label_font_size = 12.0f;
-
     };
 
     /**
@@ -381,11 +423,13 @@ namespace ImGui
         * @param figure The figure to draw on
         * @param y_data
         * @param n_data
+        * @param series Name of the marker series (used for tooltip)
         *
         */
         void DrawBars(ImPlot<Ta, Tb>& figure,
             const Tb* y_data, const int& n_data,
-            const Ta& bar_offset, const Tb* bar_bottoms);
+            const Ta& bar_offset, const Tb* bar_bottoms,
+            const char* series);
 
         /**
         * @brief Draw horizontal Bars
@@ -767,7 +811,6 @@ namespace ImGui
             else if (pos == "TR") legend_pos = ImVec2(scales_x_->GetRangeMax(), scales_y_->GetRangeMax());
             else if (pos == "BR") legend_pos = ImVec2(scales_x_->GetRangeMin(), scales_y_->GetRangeMax());
             else if (pos == "BL") legend_pos = ImVec2(scales_x_->GetRangeMin(), scales_y_->GetRangeMin());
-
 
             // Deduce the maximum text size
             ImVec2 series_size = ImVec2(0.0f, 0.0f);

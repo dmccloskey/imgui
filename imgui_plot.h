@@ -218,7 +218,7 @@ namespace ImGui
         *
         */
         void DrawXAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
-            const Ta* axis_tick_pos, const char* axis_tick_labels[])
+            const Ta* axis_tick_pos, const char* axis_tick_labels[], const int& n_ticks)
         {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
@@ -228,11 +228,11 @@ namespace ImGui
             const ImVec2 tick_size = CalcTextSize(properties_.axis_title, NULL, true);
             const float tick_height_spacing = tick_size.y*0.8; 
 
-            for (int n=0; n < IM_ARRAYSIZE(axis_tick_pos); ++n)
+            for (int n=0; n < n_ticks; ++n)
             {
                 // Tick label
                 char tick_label[64];
-                sprintf(tick_label, properties_.axis_tick_format, properties_.axis_tick_labels[n]);
+                sprintf(tick_label, properties_.axis_tick_format, axis_tick_labels[n]);
 
                 // Tick Position
                 if (strcmp(orientation, "Top") == 0)
@@ -354,7 +354,7 @@ namespace ImGui
         *
         */
         void DrawYAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
-            const Tb* axis_tick_pos, const char* axis_tick_labels[])
+            const Tb* axis_tick_pos, const char* axis_tick_labels[], const int& n_ticks)
         {      
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
@@ -364,7 +364,7 @@ namespace ImGui
             const ImVec2 tick_size = CalcTextSize(properties_.axis_title, NULL, true);
             const float tick_height_spacing = tick_size.y*0.8;
     
-            for (int n=0; n < IM_ARRAYSIZE(axis_tick_pos); ++n)
+            for (int n=0; n < n_ticks; ++n)
             {
                 // Tick label
                 char tick_label[64];
@@ -780,13 +780,14 @@ namespace ImGui
                 return;
 
             ImGuiContext& g = *GImGui;
-  
+
+            const float bar_span = (figure.GetScalesX()->GetRangeMax() - figure.GetScalesX()->GetRangeMin())/n_data;
             for (int n = 0; n < n_data; ++n)
             {
                 // Bars
-                const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->GetRangeMin() + n*properties_.bar_width + bar_offset,
+                const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + bar_offset,
                     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n]));
-                const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->GetRangeMin() + n*properties_.bar_width + bar_offset,
+                const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + properties_.bar_width + bar_offset,
                     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n]) + figure.GetScalesY()->Scale(y_data[n]));
                 window->DrawList->AddRectFilled(bar_BL, bar_TR, properties_.bar_fill_col);
 
@@ -818,7 +819,7 @@ namespace ImGui
         * @param n_data
         *
         */
-        void DrawBars(ImPlot<Ta, Tb>& figure,
+        void DrawBarsH(ImPlot<Ta, Tb>& figure,
             const Ta* x_data, const int& n_data,
             const Tb& bar_offset, const Ta* bar_bottoms);
 

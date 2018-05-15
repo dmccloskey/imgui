@@ -46,7 +46,6 @@ namespace ImGui
 
     template<class Ta, class Tb>
     void ImAxis<Ta, Tb>::DrawXAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
-        const Ta* x_data, const Tb* y_data, const int& n_data,
         const Ta& axis_tick_min, const Ta& axis_tick_max, const Ta& axis_tick_span)
     {
         ImGuiWindow* window = GetCurrentWindow();
@@ -85,7 +84,6 @@ namespace ImGui
 
     template<class Ta, class Tb>
     void ImAxis<Ta, Tb>::DrawXAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
-        const Ta& x_data, const Tb& y_data, const int& n_data,
         const Ta* axis_tick_pos, const char* axis_tick_labels[])
     {
         ImGuiWindow* window = GetCurrentWindow();
@@ -171,7 +169,6 @@ namespace ImGui
 
     template<class Ta, class Tb>
     void ImAxis<Ta, Tb>::DrawYAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
-        const Ta& x_data, const Tb& y_data, const int& n_data,
         const Tb& axis_tick_min, const Tb& axis_tick_max, const Tb& axis_tick_span)
     {        
         ImGuiWindow* window = figure.GetCurrentWindow();
@@ -210,7 +207,6 @@ namespace ImGui
 
     template<class Ta, class Tb>
     void ImAxis<Ta, Tb>::DrawYAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
-        const Ta& x_data, const Tb& y_data, const int& n_data,
         const Tb* axis_tick_pos, const char* axis_tick_labels[])
     {      
         ImGuiWindow* window = figure.GetCurrentWindow();

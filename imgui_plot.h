@@ -136,16 +136,12 @@ namespace ImGui
         * 
         * @param figure The figure to draw on
         * @param orientation Options are Top, Bottom
-        * @param x_data
-        * @param y_data
-        * @param n_data
         * @param axis_tick_min Minimum axis tick value
         * @param axis_tick_max Maximum axis tick value
         * @param axis_tick_span Spacing between axis ticks
         *
         */
         void DrawXAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
-            const Ta* x_data, const Tb* y_data, const int& n_data,
             const Ta& axis_tick_min, const Ta& axis_tick_max, const Ta& axis_tick_span);
 
         /**
@@ -153,15 +149,11 @@ namespace ImGui
         * 
         * @param figure The figure to draw on
         * @param orientation Options are Top, Bottom
-        * @param x_data
-        * @param y_data
-        * @param n_data
         * @param axis_tick_pos Positions of the axis ticks
         * @param axis_tick_labels Labels of the axis ticks
         *
         */
         void DrawXAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
-            const Ta& x_data, const Tb& y_data, const int& n_data,
             const Ta* axis_tick_pos, const char* axis_tick_labels[]);
 
         void _DrawXAxisAxis(ImPlot<Ta, Tb>& figure, const char* orientation);
@@ -172,16 +164,12 @@ namespace ImGui
         * 
         * @param figure The figure to draw on
         * @param orientation Options are Left, Right
-        * @param x_data
-        * @param y_data
-        * @param n_data
         * @param axis_tick_min Minimum axis tick value
         * @param axis_tick_max Maximum axis tick value
         * @param axis_tick_span Spacing between axis ticks
         *
         */
         void DrawYAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
-            const Ta& x_data, const Tb& y_data, const int& n_data,
             const Tb& axis_tick_min, const Tb& axis_tick_max, const Tb& axis_tick_span);
 
         /**
@@ -189,15 +177,11 @@ namespace ImGui
         * 
         * @param figure The figure to draw on
         * @param orientation Options are Left, Right
-        * @param x_data
-        * @param y_data
-        * @param n_data
         * @param axis_tick_pos Positions of the axis ticks
         * @param axis_tick_labels Labels of the axis ticks
         *
         */
         void DrawYAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
-            const Ta& x_data, const Tb& y_data, const int& n_data,
             const Tb* axis_tick_pos, const char* axis_tick_labels[]);
 
         void _DrawYAxisAxis(ImPlot<Ta, Tb>& figure, const char* orientation);
@@ -229,9 +213,6 @@ namespace ImGui
         ImU32 stroke_col = NULL;
         float stroke_width = 1.0f;
         ImU32 fill_col = NULL; ///< Background color of the legend
-        char* series = NULL; ///< List of series labels
-        ImU32* series_color = NULL; ///< List of series colors 
-        int n_series = 0;
         ImFont* series_font = NULL; ///< Font type for series labels
         float series_font_size = NULL; ///< Font size of the series labels
         ImU32 series_font_col = NULL; ///< Color of the series labels
@@ -373,7 +354,7 @@ namespace ImGui
         float line_stroke_width = 1.5f;  ///< line stroke width
         float line_stroke_dash = 0.0f;  ///< spacing of the dash
         float line_stroke_gap = 0.0f;   ///< spacing between dashes
-        const char* line_interp = "None";  ///< "None" for a straight line and "Bezier" for a curved line
+        char* line_interp = "None";  ///< "None" for a straight line and "Bezier" for a curved line
     };
 
     template<class Ta, class Tb>

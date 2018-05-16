@@ -697,14 +697,12 @@ namespace ImGui
 
             if (labels == NULL) return;
 
-            int t0 = 0;
             for (int n = 0; n < n_data; ++n)
             {            
                 // labels
                 const float centre_scaled_x = figure.GetScalesX()->Scale(x_data[n] + x_bottoms[0]) + x_offset;
                 const float centre_scaled_y = figure.GetScalesY()->Scale(y_data[n] + y_bottoms[0]) + y_offset;
                 window->DrawList->AddText(properties_.label_font, properties_.label_font_size, ImVec2(centre_scaled_x, centre_scaled_y), properties_.label_font_col, labels[n]);
-                t0 += 1;
             }
         };
         void DrawLabels(ImPlot<Ta, Tb>& figure,
@@ -718,14 +716,12 @@ namespace ImGui
 
             if (labels == NULL) return;
 
-            int t0 = 0;
             for (int n = 0; n < n_data; ++n)
             {            
                 // labels
                 const float centre_scaled_x = figure.GetScalesX()->Scale(x_data[n]);
                 const float centre_scaled_y = figure.GetScalesY()->Scale(y_data[n]);
                 window->DrawList->AddText(properties_.label_font, properties_.label_font_size, ImVec2(centre_scaled_x, centre_scaled_y), properties_.label_font_col, labels[n]);
-                t0 += 1;
             }
         };
 

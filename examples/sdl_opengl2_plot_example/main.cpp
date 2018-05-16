@@ -187,11 +187,15 @@ int main(int, char**)
             axis_properties.axis_tick_font = io.FontDefault;
             axis_properties.axis_tick_font_size = 12.0f; 
             axis_properties.axis_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            axis_properties.grid_lines_thickness = 0.5f;
+            axis_properties.grid_lines_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
 
             ImGui::ImAxis<float, float> Axis;
             Axis.SetProperties(axis_properties);
             Axis.DrawXAxis(Figure, "Bottom", 0.0f, 6.0f, 1.0f);
             Axis.DrawYAxis(Figure, "Left", 0.0f, 6.0f, 1.0f);
+            Axis.DrawXGridLines(Figure, 0.0f, 6.0f, 1.0f);
+            Axis.DrawYGridLines(Figure, 0.0f, 6.0f, 1.0f);
 
             // Legend
             ImGui::ImLegendProperties legend_properties;

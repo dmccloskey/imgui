@@ -155,6 +155,8 @@ namespace ImGui
         ImFont* axis_tick_font = NULL;
         float axis_tick_font_size = 12.0f; 
         ImU32 axis_font_col = NULL;
+        float grid_lines_thickness = 1.0f;
+        ImU32 grid_lines_col = NULL;
     };
 
     template<typename Ta, typename Tb>
@@ -422,26 +424,65 @@ namespace ImGui
             {
                 ImVec2 title_pos = ImVec2(
                     figure.GetScalesX()->GetRangeMin() - (title_size.y + tick_size.y),
-                    (figure.GetScalesY()->GetRangeMax() - figure.GetScalesY()->GetRangeMin())*0.5f + title_size.y*0.5f);
+                    (figure.GetScalesY()->GetRangeMin() - figure.GetScalesY()->GetRangeMax())*0.5f + title_size.y*0.5f);
                 window->DrawList->AddText(properties_.axis_title_font, properties_.axis_title_font_size, title_pos, properties_.axis_title_font_col, properties_.axis_title);
             }
             else if (strcmp(orientation, "Right") == 0)
             {
                 ImVec2 title_pos = ImVec2(
-                    figure.GetScalesX()->GetRangeMin() - (title_size.y + tick_size.y),
-                    (figure.GetScalesY()->GetRangeMax() - figure.GetScalesY()->GetRangeMin())*0.5f + title_size.y*0.5f);
+                    figure.GetScalesX()->GetRangeMax() + (title_size.y + tick_size.y),
+                    (figure.GetScalesY()->GetRangeMin() - figure.GetScalesY()->GetRangeMax())*0.5f + title_size.y*0.5f);
                 window->DrawList->AddText(properties_.axis_title_font, properties_.axis_title_font_size, title_pos, properties_.axis_title_font_col, properties_.axis_title);
             }
         };
         
         /**
-        * @brief Draw Gridlines
+        * @brief Draw X Axis Gridlines
         * 
         * @param figure The figure to draw on
-        * @param orientation Options are vertical, horizontal
         *
         */
-        void DrawGridLines(ImPlot<Ta, Tb>& figure, const char* orientation);
+        void DrawXGridLines(ImPlot<Ta, Tb>& figure,
+            const Ta& axis_tick_min, const Ta& axis_tick_max, const Ta& axis_tick_span)
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            Ta tick_value = axis_tick_min;           
+            while (tick_value <= axis_tick_max)
+            {
+                window->DrawList->AddLine(ImVec2(figure.GetScalesX()->Scale(tick_value), figure.GetScalesY()->GetRangeMax()),
+                    ImVec2(figure.GetScalesX()->Scale(tick_value), figure.GetScalesY()->GetRangeMin()),
+                    properties_.grid_lines_col, properties_.grid_lines_thickness);
+
+                tick_value += axis_tick_span;
+            }
+        };
+        
+        /**
+        * @brief Draw Y Axis Gridlines
+        * 
+        * @param figure The figure to draw on
+        *
+        */
+        void DrawYGridLines(ImPlot<Ta, Tb>& figure,
+            const Tb& axis_tick_min, const Tb& axis_tick_max, const Tb& axis_tick_span)
+        {        
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            Tb tick_value = axis_tick_min;           
+            while (tick_value <= axis_tick_max)
+            {
+                window->DrawList->AddLine(ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->Scale(tick_value)),
+                    ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->Scale(tick_value)),
+                    properties_.grid_lines_col, properties_.grid_lines_thickness);
+
+                tick_value += axis_tick_span;
+            }
+        };
         
         void SetProperties(ImAxisProperties& properties){properties_ = properties;}
 
@@ -986,7 +1027,21 @@ namespace ImGui
         *
         */
         void DrawPie(ImPlot<Ta, Tb>& figure,
-            const Ta* x_data, const Tb* y_data, const int& n_data);
+            const Ta* x_data, const Tb* y_data, const int& n_data)
+        {                
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImGuiContext& g = *GImGui;
+
+            const float a_max = IM_PI*2.0f * ((float)num_segments - 1.0f) / (float)num_segments;
+            PathArcTo(centre, radius, 0.0f, a_max, num_segments);
+            PathLineTo(c);
+            PathArcTo(centre, radius, 0.0f, a_max, num_segments);
+            PathLineTo(c);
+            PathFillConvex(col);
+        }
 
         void SetProperties(ImPieProperties& properties){properties_ = properties;}
     private:

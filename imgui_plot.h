@@ -192,7 +192,7 @@ namespace ImGui
                 // Tick Position
                 if (strcmp(orientation, "Top") == 0)
                 {
-                    ImVec2 tick_pos = ImVec2(figure.GetScalesX()->Scale(tick_value), figure.GetScalesY()->GetRangeMin() + tick_size.y); // interpolate the position
+                    ImVec2 tick_pos = ImVec2(figure.GetScalesX()->Scale(tick_value), figure.GetScalesY()->GetRangeMax() - tick_size.y); // interpolate the position
                     window->DrawList->AddText(properties_.axis_tick_font, properties_.axis_tick_font_size, tick_pos, properties_.axis_font_col, tick_label);
                 }
                 else if (strcmp(orientation, "Bottom") == 0)
@@ -285,7 +285,7 @@ namespace ImGui
 
             if (strcmp(orientation, "Top") == 0)
             {
-                ImVec2 title_pos = ImVec2((figure.GetScalesX()->GetRangeMax() - figure.GetScalesX()->GetRangeMin())*0.5f + title_size.x*0.5f,
+                ImVec2 title_pos = ImVec2((figure.GetScalesX()->GetRangeMax() - figure.GetScalesX()->GetRangeMax())*0.5f + title_size.x*0.5f,
                     figure.GetScalesY()->GetRangeMax() - (title_size.y + tick_size.y));
                 window->DrawList->AddText(properties_.axis_title_font, properties_.axis_title_font_size, title_pos, properties_.axis_title_font_col, properties_.axis_title);
             }
@@ -538,14 +538,14 @@ namespace ImGui
     // ## Error Bars
     struct ImErrorBarProperties
     {
-        ImU32 error_bar_stroke_col = 1.0f;
+        ImU32 error_bar_stroke_col = NULL;
         float error_bar_stroke_width = 1.0f;
         char* error_bar_cap_style = "Straight"; ///< Options are "Straight", "Circular"
         float error_bar_cap_width = 4.0f;
     };
 
     template<typename Ta, typename Tb>
-    class ImErrorBar
+    class ImErrorBars
     {
     public:
         /**
@@ -556,9 +556,49 @@ namespace ImGui
         * @param dx2 Lower error bar lengths
         *
         */
-        void DrawErrorBars(ImPlot<Ta, Tb>& figure,
+        void DrawErrorBarsX(ImPlot<Ta, Tb>& figure,
             const Ta* x_data, const Tb* y_data, const int& n_data,
-            const Ta* dx1, const Ta* dx2);
+            const Ta* dx1, const Ta* dx2,
+            const Tb& error_offset, const Ta* error_bottoms)
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImGuiContext& g = *GImGui;
+
+            for (int n = 0; n < n_data; ++n)
+            {            
+                // error bars
+                const float centre_scaled_x = figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n]);
+                const float centre_scaled_y = figure.GetScalesY()->Scale(y_data[n]) + error_offset;
+
+                const ImVec2 point = ImVec2(centre_scaled_x, centre_scaled_y);
+                const ImVec2 error_high = ImVec2(figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n] + dx1[n]), centre_scaled_y);
+                const ImVec2 error_low = ImVec2(figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n] - dx2[n]), centre_scaled_y);
+                
+                window->DrawList->AddLine(point, error_high, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
+                window->DrawList->AddLine(point, error_low, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
+
+                // caps
+                if (strcmp(properties_.error_bar_cap_style, "Straight")==0)
+                {                
+                    if (dx1[n] > 0)
+                    {
+                        const ImVec2 error_high_down = ImVec2(figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n] + dx1[n]), centre_scaled_y - properties_.error_bar_cap_width * 0.5);
+                        const ImVec2 error_high_up = ImVec2(figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n] + dx1[n]), centre_scaled_y + properties_.error_bar_cap_width * 0.5);
+                        window->DrawList->AddLine(error_high_down, error_high_up, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
+                    }
+
+                    if (dx2[n] > 0)
+                    {
+                        const ImVec2 error_low_down = ImVec2(figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n] - dx2[n]), centre_scaled_y - properties_.error_bar_cap_width * 0.5);
+                        const ImVec2 error_low_up = ImVec2(figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n] - dx2[n]), centre_scaled_y + properties_.error_bar_cap_width * 0.5);
+                        window->DrawList->AddLine(error_low_down, error_low_up, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
+                    }
+                }
+            }
+        };
 
         /**
         * @brief Draw Error Bars
@@ -568,9 +608,53 @@ namespace ImGui
         * @param dy2 Lower error bar lengths
         *
         */
-        void DrawErrorBars(ImPlot<Ta, Tb>& figure,
+        void DrawErrorBarsY(ImPlot<Ta, Tb>& figure,
             const Ta* x_data, const Tb* y_data, const int& n_data,
-            const Tb* dy1, const Tb* dy2);
+            const Tb* dy1, const Tb* dy2,
+            const Ta& error_offset, const Tb* error_bottoms)
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImGuiContext& g = *GImGui;
+
+            for (int n = 0; n < n_data; ++n)
+            {            
+                // error bars
+                const float centre_scaled_x = figure.GetScalesX()->Scale(x_data[n]) + error_offset;
+                const float centre_scaled_y = figure.GetScalesY()->Scale(y_data[n] + error_bottoms[n]);
+
+                const ImVec2 point = ImVec2(centre_scaled_x, centre_scaled_y);
+                const ImVec2 error_high = ImVec2(centre_scaled_x, figure.GetScalesY()->Scale(y_data[n] + error_bottoms[n] + dy1[n]));
+                const ImVec2 error_low = ImVec2(centre_scaled_x, figure.GetScalesY()->Scale(y_data[n] + error_bottoms[n] - dy2[n]));
+                
+                window->DrawList->AddLine(point, error_high, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
+                window->DrawList->AddLine(point, error_low, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
+
+                // caps
+                if (strcmp(properties_.error_bar_cap_style, "Straight")==0)
+                {                
+                    if (dy1[n] > 0)
+                    {
+                    const ImVec2 error_high_left = ImVec2(centre_scaled_x - properties_.error_bar_cap_width * 0.5,
+                        figure.GetScalesY()->Scale(y_data[n] + error_bottoms[n] + dy1[n]));
+                    const ImVec2 error_high_right = ImVec2(centre_scaled_x + properties_.error_bar_cap_width * 0.5,
+                        figure.GetScalesY()->Scale(y_data[n] + error_bottoms[n] + dy1[n]));
+                    window->DrawList->AddLine(error_high_left, error_high_right, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
+                    }
+
+                    if (dy2[n] > 0)
+                    {
+                    const ImVec2 error_low_left = ImVec2(centre_scaled_x - properties_.error_bar_cap_width * 0.5,
+                        figure.GetScalesY()->Scale(y_data[n] + error_bottoms[n] - dy2[n]));
+                    const ImVec2 error_low_right = ImVec2(centre_scaled_x + properties_.error_bar_cap_width * 0.5,
+                        figure.GetScalesY()->Scale(y_data[n] + error_bottoms[n] - dy2[n]));
+                    window->DrawList->AddLine(error_low_left, error_low_right, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
+                    }
+                }
+            }
+        };
         
         void SetProperties(ImErrorBarProperties& properties){properties_ = properties;}
 
@@ -601,6 +685,28 @@ namespace ImGui
         * @param labels Label for each data point of length n (matching order of x/y_data)
         *
         */
+        void DrawLabels(ImPlot<Ta, Tb>& figure,
+            const Ta* x_data, const Tb* y_data, const int& n_data, const char* labels[],
+            const Ta& x_offset, const Tb& y_offset, const Ta* x_bottoms, const Ta* y_bottoms)
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImGuiContext& g = *GImGui;
+
+            if (labels == NULL) return;
+
+            int t0 = 0;
+            for (int n = 0; n < n_data; ++n)
+            {            
+                // labels
+                const float centre_scaled_x = figure.GetScalesX()->Scale(x_data[n] + x_bottoms[0]) + x_offset;
+                const float centre_scaled_y = figure.GetScalesY()->Scale(y_data[n] + y_bottoms[0]) + y_offset;
+                window->DrawList->AddText(properties_.label_font, properties_.label_font_size, ImVec2(centre_scaled_x, centre_scaled_y), properties_.label_font_col, labels[n]);
+                t0 += 1;
+            }
+        };
         void DrawLabels(ImPlot<Ta, Tb>& figure,
             const Ta* x_data, const Tb* y_data, const int& n_data, const char* labels[])
         {
@@ -781,35 +887,34 @@ namespace ImGui
 
             ImGuiContext& g = *GImGui;
 
-            const float bar_span = (figure.GetScalesX()->GetRangeMax() - figure.GetScalesX()->GetRangeMin())/n_data;
+            const float bar_span = (figure.GetScalesX()->GetRangeMax() - figure.GetScalesX()->GetRangeMin())/(n_data - 1);
             for (int n = 0; n < n_data; ++n)
             {
                 // Bars
+                // const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + bar_offset,
+                //     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n]));
+                // const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + properties_.bar_width + bar_offset,
+                //     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n] + y_data[n]));               
                 const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + bar_offset,
-                    figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n]));
+                    figure.GetScalesY()->Scale(bar_bottoms[n]));
                 const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + properties_.bar_width + bar_offset,
-                    figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n]) + figure.GetScalesY()->Scale(y_data[n]));
+                    figure.GetScalesY()->Scale(bar_bottoms[n] + y_data[n]));
                 window->DrawList->AddRectFilled(bar_BL, bar_TR, properties_.bar_fill_col);
 
+                // printf("BL: %f, %f; TR: %f, %f", bar_BL.x, bar_BL.y, bar_TR.x, bar_TR.y);
+                // system("pause");
+
                 // Tooltip on hover
-                if (bar_TR.x <= g.IO.MousePos.x && 
-                bar_BL.x >= g.IO.MousePos.x &&
-                bar_TR.y >= g.IO.MousePos.y && 
-                bar_BL.y <= g.IO.MousePos.y)
+                if (bar_BL.x <= g.IO.MousePos.x &&
+                bar_TR.x >= g.IO.MousePos.x &&
+                bar_BL.y >= g.IO.MousePos.y &&
+                bar_TR.y <= g.IO.MousePos.y)
                 {
                     SetTooltip("%s\n%s: %8.4g", series, "y", y_data[n]);
                     window->DrawList->AddRectFilled(bar_BL, bar_TR, properties_.bar_hovered_col);
                 }
-
-                // // labels
-                // if (labels != NULL)
-                // {                        
-                //     const float centre_scaled_x = n*bar_span + bar_offset + figure.GetScalesX()->GetRangeMin() * 0.5;
-                //     const float centre_scaled_y = figure.GetScalesY()->GetRangeMin() - figure.GetScalesY()->Scale(bar_bottoms[n]) - figure.GetScalesY()->Scale(y_data[n]);
-                //     window->DrawList->AddText(label_font, label_font_size, ImVec2(centre_scaled_x, centre_scaled_y), label_font_col, labels[n]);
-                // }
             }
-        }
+        };
 
         /**
         * @brief Draw horizontal Bars
@@ -821,7 +926,43 @@ namespace ImGui
         */
         void DrawBarsH(ImPlot<Ta, Tb>& figure,
             const Ta* x_data, const int& n_data,
-            const Tb& bar_offset, const Ta* bar_bottoms);
+            const Tb& bar_offset, const Ta* bar_bottoms,
+            const char* series)
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImGuiContext& g = *GImGui;
+
+            const float bar_span = (figure.GetScalesY()->GetRangeMax() - figure.GetScalesY()->GetRangeMin())/(n_data - 1);
+            for (int n = 0; n < n_data; ++n)
+            {
+                // Bars
+                // const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + bar_offset,
+                //     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n]));
+                // const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + properties_.bar_width + bar_offset,
+                //     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n] + y_data[n]));               
+                const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->Scale(bar_bottoms[n]),
+                    figure.GetScalesY()->GetRangeMin() + n*bar_span + bar_offset);
+                const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->Scale(bar_bottoms[n] + x_data[n]),
+                    figure.GetScalesY()->GetRangeMin() + n*bar_span + properties_.bar_width + bar_offset);
+                window->DrawList->AddRectFilled(bar_BL, bar_TR, properties_.bar_fill_col);
+
+                // printf("BL: %f, %f; TR: %f, %f", bar_BL.x, bar_BL.y, bar_TR.x, bar_TR.y);
+                // system("pause");
+
+                // Tooltip on hover
+                if (bar_BL.x <= g.IO.MousePos.x &&
+                bar_TR.x >= g.IO.MousePos.x &&
+                bar_BL.y <= g.IO.MousePos.y &&
+                bar_TR.y >= g.IO.MousePos.y)
+                {
+                    SetTooltip("%s\n%s: %8.4g", series, "x", x_data[n]);
+                    window->DrawList->AddRectFilled(bar_BL, bar_TR, properties_.bar_hovered_col);
+                }
+            }
+        };
 
         void SetProperties(ImBarProperties& properties){properties_ = properties;}
     private:

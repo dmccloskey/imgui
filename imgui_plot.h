@@ -1,5 +1,8 @@
 // # Low level plotting features and components for creating basic to advanced plots and charts
 
+// BUGS:
+// - titles does not move in both x/y directions correctly relative to the figure
+
 #include "imgui.h"
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
@@ -43,7 +46,6 @@ namespace ImGui
         Tb range_min_;
         Tb range_max_;
     };
-
 
     /**
      * @brief Continuous linear scales used for ImVec2 and ImVec4 (colors

@@ -1032,7 +1032,7 @@ namespace ImGui
         *
         */
         void DrawPie(ImPlot<Ta, Tb>& figure,
-            const Ta* x_data, const Tb* y_data, const int& n_data)
+            const Ta* x_data, const Tb* colors, const int& n_data)
         {                
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
@@ -1058,7 +1058,7 @@ namespace ImGui
                 // window->DrawList->PathLineTo(vec1);  // start outer to inner arc line
                 window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_prev_rad, x_data_rad, n_segments);  // inner arc
                 // window->DrawList->PathLineTo(vec2);  // end outer to inner arc line
-                window->DrawList->PathFillConvex(y_data[n]);
+                window->DrawList->PathFillConvex(colors[n]);
 
                 // Tooltip on hover
 

@@ -1013,6 +1013,9 @@ namespace ImGui
     {
         float inner_radius = 0.0f; ///< change to create a donught plot
         float outer_radius = 100.0f; ///< controls the size of the pie
+        ImU32 pie_stroke_col = NULL;
+        float pie_stroke_width = 1.0f;
+        ImU32 pie_hovered_col = NULL;
     };
 
     template<typename Ta, typename Tb>
@@ -1023,8 +1026,8 @@ namespace ImGui
         * @brief Draw Pie
         * 
         * @param figure The figure to draw on
-        * @param x_data
-        * @param y_data
+        * @param x_data Numerical values
+        * @param y_data Color used for each of the pie segments
         * @param n_data
         *
         */
@@ -1037,12 +1040,30 @@ namespace ImGui
 
             ImGuiContext& g = *GImGui;
 
-            const float a_max = IM_PI*2.0f * ((float)num_segments - 1.0f) / (float)num_segments;
-            PathArcTo(centre, radius, 0.0f, a_max, num_segments);
-            PathLineTo(c);
-            PathArcTo(centre, radius, 0.0f, a_max, num_segments);
-            PathLineTo(c);
-            PathFillConvex(col);
+            // calculate the total x
+            float x_data_total = 0;
+            for (int n = 0; n < n_data; ++n)
+                x_data_total += x_data[n];
+
+            int pie_segments_total = 32;
+
+            float x_data_prev_rad = 0.0f;
+            for (int n = 0; n < n_data; ++n)
+            {                
+                const float x_data_rad = IM_PI*2.0f*x_data[n]/x_data_total;  // convert x_data to radians
+                const int n_segments = (int)(x_data[n]/x_data_total*(float)num_segments);  // determine the number of segments
+
+                // draw the pie segment
+                window->DrawList->PathArcTo(centre, properties_.outer_radius, x_data_prev_rad, x_data_rad, n_segments);  // outer arc
+                // window->DrawList->PathLineTo(vec1);  // start outer to inner arc line
+                window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_prev_rad, x_data_rad, n_segments);  // inner arc
+                // window->DrawList->PathLineTo(vec2);  // end outer to inner arc line
+                window->DrawList->PathFillConvex(y_data[n]);
+
+                // Tooltip on hover
+
+                x_data_prev_rad = x_data_rad;
+            }
         }
 
         void SetProperties(ImPieProperties& properties){properties_ = properties;}

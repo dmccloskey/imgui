@@ -1032,7 +1032,7 @@ namespace ImGui
         *
         */
         void DrawPie(ImPlot<Ta, Tb>& figure,
-            const Ta* x_data, const Tb* colors, const int& n_data)
+            const Ta* x_data, const ImU32* colors, const int& n_data)
         {                
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
@@ -1051,7 +1051,11 @@ namespace ImGui
             for (int n = 0; n < n_data; ++n)
             {                
                 const float x_data_rad = IM_PI*2.0f*x_data[n]/x_data_total;  // convert x_data to radians
-                const int n_segments = (int)(x_data[n]/x_data_total*(float)num_segments);  // determine the number of segments
+                const int n_segments = (int)(x_data[n]/x_data_total*(float)pie_segments_total);  // determine the number of segments
+                const ImVec2 centre = ImVec2(
+                    (figure.GetScalesX()->GetRangeMin() + figure.GetScalesX()->GetRangeMax())/2,
+                    (figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->GetRangeMax())/2
+                );
 
                 // draw the pie segment
                 window->DrawList->PathArcTo(centre, properties_.outer_radius, x_data_prev_rad, x_data_rad, n_segments);  // outer arc

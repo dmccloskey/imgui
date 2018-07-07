@@ -7,7 +7,8 @@
 // See imgui_impl_sdl.cpp for details.
 
 #include "imgui.h"
-#include "imgui_impl_sdl_gl2.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_opengl2.h"
 #include "imgui_plot.h"
 #include <stdio.h>
 #include <SDL.h>
@@ -38,7 +39,9 @@ int main(int, char**)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-    ImGui_ImplSdlGL2_Init(window);
+    
+    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+    ImGui_ImplOpenGL2_Init();
 
     // Setup style
     ImGui::StyleColorsDark();
@@ -72,11 +75,15 @@ int main(int, char**)
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            ImGui_ImplSdlGL2_ProcessEvent(&event);
+            ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT)
                 done = true;
         }
-        ImGui_ImplSdlGL2_NewFrame(window);
+
+        // Start the ImGui frame
+        ImGui_ImplOpenGL2_NewFrame();
+        ImGui_ImplSDL2_NewFrame(window);
+        ImGui::NewFrame();
 
         // 1. Scatter plot demo
         {
@@ -631,7 +638,7 @@ int main(int, char**)
             scales_color.SetDomain(0.0f, 7.0f); 
             scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
 
-            ImVec4 series_color[n_data];
+            ImU32 series_color[n_data];
             for (int i=0; i<n_data; ++i)
                 series_color[i] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(i));
             
@@ -665,7 +672,7 @@ int main(int, char**)
             pie_properties.pie_stroke_width = 1.0f;
             pie_properties.pie_hovered_col = NULL;
 
-            ImGui::ImPie<float, ImU32> Pie;
+            ImGui::ImPie<float, float> Pie;
 
             Pie.SetProperties(pie_properties);
             Pie.DrawPie(Figure, x_data, series_color, n_data);
@@ -692,17 +699,18 @@ int main(int, char**)
         }
 
         // Rendering
+        ImGui::Render();
         glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
-        ImGui::Render();
-        ImGui_ImplSdlGL2_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
     }
 
     // Cleanup
-    ImGui_ImplSdlGL2_Shutdown();
+    ImGui_ImplOpenGL2_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 
     SDL_GL_DeleteContext(gl_context);

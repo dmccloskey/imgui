@@ -494,7 +494,6 @@ int main(int, char**)
             Legend.SetProperties(legend_properties);
             Legend.DrawLegend(Figure, "TR", series, series_color, 3);
 
-
             ImGui::End(); 
         }
 
@@ -621,7 +620,7 @@ int main(int, char**)
         // 4. Pie chart demo
         {
             // Data
-            const float x_data[] = {50.0f, 10.0f, 20.0f, 5.0f, 5.0f, 8.0f, 2.0f};
+            const float x_data[] = {45.0f, 15.0f, 20.0f, 5.0f, 5.0f, 8.0f, 2.0f};
 
             const char* labels[] = {"1", "2", "3", "4", "5", "6", "7"};
             const char* series[] = {"series1", "series2", "series3"};
@@ -638,9 +637,20 @@ int main(int, char**)
             scales_color.SetDomain(0.0f, 7.0f); 
             scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
 
+            // ImVec4 series_color_vec4[n_data] = {
+            //     ImVec4(0.0f, 0.0f, 255.0f, 0.0f), // yellow
+            //     // ImVec4(255.0f, 255.0f, 0.0f, 0.0f), // blue
+            //     ImVec4(255.0f, 0.0f, 255.0f, 0.0f), // green
+            //     ImVec4(255.0f, 0.0f, 0.0f, 255.0f), // red
+            //     ImVec4(0.0f, 0.0f, 255.0f, 255.0f),  // blue
+            //     ImVec4(0.0f, 255.0f, 0.0f, 0.0f), // magenta
+            //     ImVec4(255.0f, 0.0f, 0.0f, 0.0f), // cyan
+            //     ImVec4(0.0f, 89.25f, 255.0f, 0.0f) // orange
+            // };
             ImU32 series_color[n_data];
             for (int i=0; i<n_data; ++i)
-                series_color[i] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(i));
+                series_color[i] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(i)));
+                // series_color[i] = ImGui::ColorConvertFloat4ToU32(series_color_vec4[i]);
             
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
@@ -666,16 +676,18 @@ int main(int, char**)
 
             // Pie 1
             ImGui::ImPieProperties pie_properties;
-            pie_properties.inner_radius = 0.0f; 
+            pie_properties.inner_radius = 10.0f; 
             pie_properties.outer_radius = 100.0f; 
             pie_properties.pie_stroke_col = NULL;
             pie_properties.pie_stroke_width = 1.0f;
             pie_properties.pie_hovered_col = NULL;
+            pie_properties.pie_segments = 256;
 
             ImGui::ImPie<float, float> Pie;
 
             Pie.SetProperties(pie_properties);
             Pie.DrawPie(Figure, x_data, series_color, n_data);
+            // Pie.DrawPie(Figure, x_data, series_color, 1);
 
             // Legend
             ImGui::ImLegendProperties legend_properties;
@@ -688,7 +700,7 @@ int main(int, char**)
 
             ImGui::ImLegend<float, float> Legend;
             Legend.SetProperties(legend_properties);
-            Legend.DrawLegend(Figure, "TR", series, series_color, 3);
+            Legend.DrawLegend(Figure, "TR", labels, series_color, n_data);
 
             ImGui::End();
         }

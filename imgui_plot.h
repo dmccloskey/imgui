@@ -1054,11 +1054,19 @@ namespace ImGui
             for (int n = 0; n < n_data; ++n)
             {                
                 const float x_data_rad = IM_PI*2.0f*x_data[n]/x_data_total + x_data_prev_rad;  // convert x_data to radians
-                const int n_segments = (int)(x_data[n]/x_data_total*(float)properties_.pie_segments);  // determine the number of segments
+                const int n_segments = (int)ceilf(x_data[n]/x_data_total*(float)properties_.pie_segments);  // determine the number of segments
                 const ImVec2 centre = ImVec2(
                     (figure.GetScalesX()->GetRangeMin() + figure.GetScalesX()->GetRangeMax())/2,
                     (figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->GetRangeMax())/2
                 );
+
+                // // line 1
+                // const ImVec2 vec_line_start = ImVec2(
+                //     ImCos(x_data_prev_rad)*properties_.inner_radius + centre.x, 
+                //     ImSin(x_data_prev_rad)*properties_.inner_radius + centre.y);
+                // const ImVec2 vec_line_end = ImVec2(
+                //     ImCos(x_data_prev_rad)*properties_.outer_radius + centre.x, 
+                //     ImSin(x_data_prev_rad)*properties_.outer_radius + centre.y);
 
                 // start: end of the outer arc.  end: start of the inner arc
                 const ImVec2 vec1 = ImVec2(
@@ -1071,11 +1079,14 @@ namespace ImGui
                     ImSin(x_data_prev_rad)*properties_.outer_radius + centre.y);
 
                 // draw the pie segment
+                // window->DrawList->AddLine(vec_line_start, vec_line_end, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
                 window->DrawList->PathArcTo(centre, properties_.outer_radius, x_data_prev_rad, x_data_rad, n_segments);  // outer arc
                 window->DrawList->PathLineTo(vec1);  // start outer to inner arc line
                 window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_rad, x_data_prev_rad, n_segments);  // inner arc 
-                window->DrawList->PathLineTo(vec2);  // end outer to inner arc line
+                window->DrawList->PathLineTo(vec2);  // end inner arc to outer arc line
                 window->DrawList->PathFillConvex(colors[n]);
+
+                // add labels
 
                 // [TODO: Tooltip on hover]
 

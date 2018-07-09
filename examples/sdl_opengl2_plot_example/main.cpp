@@ -621,9 +621,7 @@ int main(int, char**)
         {
             // Data
             const float x_data[] = {45.0f, 15.0f, 20.0f, 5.0f, 5.0f, 8.0f, 2.0f};
-
             const char* labels[] = {"1", "2", "3", "4", "5", "6", "7"};
-            const char* series[] = {"series1", "series2", "series3"};
             const int n_data = 7;
 
             // Data scales         
@@ -634,23 +632,20 @@ int main(int, char**)
 
             // Color scales            
             ImGui::ImLinearScales<float, ImVec4> scales_color; 
-            scales_color.SetDomain(0.0f, 7.0f); 
+            scales_color.SetDomain(0.0f, 6.0f); 
             scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
 
-            // ImVec4 series_color_vec4[n_data] = {
-            //     ImVec4(0.0f, 0.0f, 255.0f, 0.0f), // yellow
-            //     // ImVec4(255.0f, 255.0f, 0.0f, 0.0f), // blue
-            //     ImVec4(255.0f, 0.0f, 255.0f, 0.0f), // green
-            //     ImVec4(255.0f, 0.0f, 0.0f, 255.0f), // red
-            //     ImVec4(0.0f, 0.0f, 255.0f, 255.0f),  // blue
-            //     ImVec4(0.0f, 255.0f, 0.0f, 0.0f), // magenta
-            //     ImVec4(255.0f, 0.0f, 0.0f, 0.0f), // cyan
-            //     ImVec4(0.0f, 89.25f, 255.0f, 0.0f) // orange
-            // };
             ImU32 series_color[n_data];
             for (int i=0; i<n_data; ++i)
+            {
                 series_color[i] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(i)));
-                // series_color[i] = ImGui::ColorConvertFloat4ToU32(series_color_vec4[i]);
+                // [BUG: conversion from ImVec4 to ImU32 looses color information resulting
+                //       in only 3 colors (red, pink, and blue)]
+                // printf("x: %0.2f, y: %0.2f, z: %0.2f, w: %0.2f, U32: %i\n",
+                //     scales_color.Scale(float(i)).x, scales_color.Scale(float(i)).y,
+                //     scales_color.Scale(float(i)).z, scales_color.Scale(float(i)).w,
+                //     ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(i))));
+            }
             
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);

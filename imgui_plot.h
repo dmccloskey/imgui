@@ -3,6 +3,8 @@
 // BUGS:
 // - titles does not move in both x/y directions correctly relative to the figure
 
+#pragma once
+
 #include "imgui.h"
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
@@ -49,18 +51,18 @@ namespace ImGui
 
     /**
      * @brief Continuous linear scales used for ImVec2 and ImVec4 (colors
-     * 
+     *
      */
     template<typename Ta, typename Tb>
-    class ImLinearScales: public ImScales<Ta, Tb>
+    class ImLinearScales : public ImScales<Ta, Tb>
     {
     public:
         Tb Scale(const Ta& t)
         {
-            const Ta tx = (t - domain_min_)/(domain_max_ - domain_min_);
-            const Tb ty = ImLerp(range_min_, range_max_, tx);
+            const Ta tx = (t - this->domain_min_) / (this->domain_max_ - this->domain_min_);
+            const Tb ty = ImLerp(this->range_min_, this->range_max_, tx);
             return ty;
-        };
+        }
         // void    Pow();
         // void    Log();
         // void    Time();
@@ -69,7 +71,7 @@ namespace ImGui
         // // quantized scales
         // void    Quantize(); // maps a continouus variable to a discrete scale
         // void    Quantile(ImVec2& range, float& val); // maps a continuous varible to a sampled domain
-        // void    Threshold(); 
+        // void    Threshold();
         // // discrete scales
         // void    Ordered();
         // void    Categorical();
@@ -77,19 +79,19 @@ namespace ImGui
         // void    Round();
         // void    Point();
     };
-    
+
     // ## Plot element
     struct ImPlotProperties
     {
-        ImVec2 plot_size = ImVec2(480.0f, 480.0f);        
+        ImVec2 plot_size = ImVec2(480.0f, 480.0f);
         float margin_bottom = 50.0f;
-        float margin_top = 50.0f; 
+        float margin_top = 50.0f;
         float margin_left = 50.0f;
         float margin_right = 50.0f;
-        char* title = NULL;
+        const char* title = NULL;
         ImFont* title_font = NULL;
         float title_font_size = 18.0f;
-        ImU32 title_font_col = NULL;
+        ImU32 title_font_col = 0;
     };
 
     template<typename Ta, typename Tb>
@@ -98,7 +100,7 @@ namespace ImGui
     public:
         /**
          * @brief Draw the figure with an optional title
-         * 
+         *
          */
         void DrawFigure()
         {
@@ -147,18 +149,18 @@ namespace ImGui
     // ## Axes
     struct ImAxisProperties
     {
-        char* axis_title = NULL;
+        const char* axis_title = NULL;
         ImFont* axis_title_font = NULL;
-        float axis_title_font_size = NULL;
-        ImU32 axis_title_font_col = NULL;
-        char* axis_tick_format = "%4.2f"; ///< string format
+        float axis_title_font_size = 0.0f;
+        ImU32 axis_title_font_col = 0;
+        const char* axis_tick_format = "%4.2f"; ///< string format
         float axis_thickness = 1.0f;
-        ImU32 axis_col = NULL;
+        ImU32 axis_col = 0;
         ImFont* axis_tick_font = NULL;
-        float axis_tick_font_size = 12.0f; 
-        ImU32 axis_font_col = NULL;
+        float axis_tick_font_size = 12.0f;
+        ImU32 axis_font_col = 0;
         float grid_lines_thickness = 1.0f;
-        ImU32 grid_lines_col = NULL;
+        ImU32 grid_lines_col = 0;
     };
 
     template<typename Ta, typename Tb>
@@ -167,7 +169,7 @@ namespace ImGui
     public:
         /**
         * @brief Draw X axis
-        * 
+        *
         * @param figure The figure to draw on
         * @param orientation Options are Top, Bottom
         * @param axis_tick_min Minimum axis tick value
@@ -184,9 +186,8 @@ namespace ImGui
 
             // Tick major
             const ImVec2 tick_size = CalcTextSize(properties_.axis_title, NULL, true);
-            const float tick_height_spacing = tick_size.y*0.8;
 
-            Ta tick_value = axis_tick_min;           
+            Ta tick_value = axis_tick_min;
             while (tick_value <= axis_tick_max)
             {
                 // Tick label
@@ -214,7 +215,7 @@ namespace ImGui
 
         /**
         * @brief Draw X axis
-        * 
+        *
         * @param figure The figure to draw on
         * @param orientation Options are Top, Bottom
         * @param axis_tick_pos Positions of the axis ticks
@@ -230,7 +231,6 @@ namespace ImGui
 
             // Tick major
             const ImVec2 tick_size = CalcTextSize(properties_.axis_title, NULL, true);
-            const float tick_height_spacing = tick_size.y*0.8; 
 
             for (int n=0; n < n_ticks; ++n)
             {
@@ -256,7 +256,7 @@ namespace ImGui
         };
 
         void _DrawXAxisAxis(ImPlot<Ta, Tb>& figure, const char* orientation)
-        {      
+        {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
                 return;
@@ -274,18 +274,16 @@ namespace ImGui
             }
         };
         void _DrawXAxisTitle(ImPlot<Ta, Tb>& figure, const char* orientation)
-        {      
+        {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
                 return;
 
             // Tick major
             const ImVec2 tick_size = CalcTextSize(properties_.axis_title, NULL, true);
-            const float tick_height_spacing = tick_size.y*0.8;
 
             // Axis title
             const ImVec2 title_size = CalcTextSize(properties_.axis_title, NULL, true);
-            const float title_height_spacing = title_size.y*0.8;
 
             if (strcmp(orientation, "Top") == 0)
             {
@@ -303,7 +301,7 @@ namespace ImGui
 
         /**
         * @brief Draw Y axis
-        * 
+        *
         * @param figure The figure to draw on
         * @param orientation Options are Left, Right
         * @param axis_tick_min Minimum axis tick value
@@ -313,16 +311,15 @@ namespace ImGui
         */
         void DrawYAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
             const Tb& axis_tick_min, const Tb& axis_tick_max, const Tb& axis_tick_span)
-        {        
+        {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
                 return;
 
             // Tick major
             const ImVec2 tick_size = CalcTextSize(properties_.axis_title, NULL, true);
-            const float tick_height_spacing = tick_size.y*0.8;
 
-            Tb tick_value = axis_tick_min;           
+            Tb tick_value = axis_tick_min;
             while (tick_value <= axis_tick_max)
             {
                 // Tick label
@@ -350,7 +347,7 @@ namespace ImGui
 
         /**
         * @brief Draw Y axis
-        * 
+        *
         * @param figure The figure to draw on
         * @param orientation Options are Left, Right
         * @param axis_tick_pos Positions of the axis ticks
@@ -359,15 +356,14 @@ namespace ImGui
         */
         void DrawYAxis(ImPlot<Ta, Tb>& figure, const char* orientation,
             const Tb* axis_tick_pos, const char* axis_tick_labels[], const int& n_ticks)
-        {      
+        {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
                 return;
 
             // Tick major
             const ImVec2 tick_size = CalcTextSize(properties_.axis_title, NULL, true);
-            const float tick_height_spacing = tick_size.y*0.8;
-    
+
             for (int n=0; n < n_ticks; ++n)
             {
                 // Tick label
@@ -391,7 +387,7 @@ namespace ImGui
         };
 
         void _DrawYAxisAxis(ImPlot<Ta, Tb>& figure, const char* orientation)
-        {      
+        {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
                 return;
@@ -409,18 +405,16 @@ namespace ImGui
             }
         };
         void _DrawYAxisTitle(ImPlot<Ta, Tb>& figure, const char* orientation)
-        {      
+        {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
                 return;
 
             // Tick major
             const ImVec2 tick_size = CalcTextSize(properties_.axis_title, NULL, true);
-            const float tick_height_spacing = tick_size.y*0.8;
 
             // Axis title
             const ImVec2 title_size = CalcTextSize(properties_.axis_title, NULL, true);
-            const float title_height_spacing = title_size.y*0.8;
 
             if (strcmp(orientation, "Left") == 0)
             {
@@ -437,10 +431,10 @@ namespace ImGui
                 window->DrawList->AddText(properties_.axis_title_font, properties_.axis_title_font_size, title_pos, properties_.axis_title_font_col, properties_.axis_title);
             }
         };
-        
+
         /**
         * @brief Draw X Axis Gridlines
-        * 
+        *
         * @param figure The figure to draw on
         *
         */
@@ -451,7 +445,7 @@ namespace ImGui
             if (window->SkipItems)
                 return;
 
-            Ta tick_value = axis_tick_min;           
+            Ta tick_value = axis_tick_min;
             while (tick_value <= axis_tick_max)
             {
                 window->DrawList->AddLine(ImVec2(figure.GetScalesX()->Scale(tick_value), figure.GetScalesY()->GetRangeMax()),
@@ -461,21 +455,21 @@ namespace ImGui
                 tick_value += axis_tick_span;
             }
         };
-        
+
         /**
         * @brief Draw Y Axis Gridlines
-        * 
+        *
         * @param figure The figure to draw on
         *
         */
         void DrawYGridLines(ImPlot<Ta, Tb>& figure,
             const Tb& axis_tick_min, const Tb& axis_tick_max, const Tb& axis_tick_span)
-        {        
+        {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
                 return;
 
-            Tb tick_value = axis_tick_min;           
+            Tb tick_value = axis_tick_min;
             while (tick_value <= axis_tick_max)
             {
                 window->DrawList->AddLine(ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->Scale(tick_value)),
@@ -485,13 +479,13 @@ namespace ImGui
                 tick_value += axis_tick_span;
             }
         };
-        
+
         void SetProperties(ImAxisProperties& properties){properties_ = properties;}
 
     private:
         ImAxisProperties properties_;
     };
-    
+
     // ## Plot legends and other features
     struct ImColorBarProperties
     {
@@ -500,28 +494,28 @@ namespace ImGui
 
     struct ImLegendProperties
     {
-        ImU32 stroke_col = NULL;
+        ImU32 stroke_col = 0;
         float stroke_width = 1.0f;
-        ImU32 fill_col = NULL; ///< Background color of the legend
+        ImU32 fill_col = 0; ///< Background color of the legend
         ImFont* series_font = NULL; ///< Font type for series labels
-        float series_font_size = NULL; ///< Font size of the series labels
-        ImU32 series_font_col = NULL; ///< Color of the series labels
+        float series_font_size = 0.0f; ///< Font size of the series labels
+        ImU32 series_font_col = 0; ///< Color of the series labels
     };
 
     template<typename Ta, typename Tb>
     class ImLegend
     {
     public:
-        
+
         /**@brief Draw a plot legend
-         * 
+         *
          * @param figure The figure to draw on
          * @param pos Pos of the legend (TL, TR, BL, BR)
          * @param col Background color of the legend
          * @param series List of series labels
-         * @param series_color List of series colors 
+         * @param series_color List of series colors
          */
-        void DrawLegend(ImPlot<Ta, Tb>& figure, const char* pos, 
+        void DrawLegend(ImPlot<Ta, Tb>& figure, const char* pos,
             const char* series[], const ImU32 series_color[], const int& n_series)
         {
             ImGuiWindow* window = GetCurrentWindow();
@@ -531,10 +525,10 @@ namespace ImGui
             //assert(IM_ARRAYSIZE(series) == IM_ARRAYSIZE(series_color));
 
             ImVec2 legend_pos = ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->GetRangeMax()); //TR
-            if (pos == "TL") legend_pos = ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->GetRangeMin());
-            else if (pos == "TR") legend_pos = ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->GetRangeMax());
-            else if (pos == "BR") legend_pos = ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->GetRangeMax());
-            else if (pos == "BL") legend_pos = ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->GetRangeMin());
+            if (!strcmp(pos, "TL")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->GetRangeMin());
+            else if (!strcmp(pos, "TR")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->GetRangeMax());
+            else if (!strcmp(pos, "BR")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->GetRangeMax());
+            else if (!strcmp(pos, "BL")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->GetRangeMin());
 
 
             // Deduce the maximum text size
@@ -545,7 +539,7 @@ namespace ImGui
                 if (series_size_tmp.x > series_size.x) series_size = series_size_tmp;
             }
 
-            // Legend attributes     
+            // Legend attributes
             const float series_spacing = 0.1*series_size.y;
             const float box_length = 0.9*series_size.y;
             const float height = n_series * series_size.y + n_series * series_spacing + series_spacing;
@@ -562,7 +556,7 @@ namespace ImGui
                 window->DrawList->AddRectFilled(
                     ImVec2(legend_pos.x + series_spacing, legend_pos.y + start_y_pos),
                     ImVec2(legend_pos.x + series_spacing + box_length, legend_pos.y + start_y_pos + box_length),
-                    series_color[n]); 
+                    series_color[n]);
 
                 // Label colored box with series name
                 window->DrawList->AddText(properties_.series_font, properties_.series_font_size,
@@ -581,9 +575,9 @@ namespace ImGui
     // ## Error Bars
     struct ImErrorBarProperties
     {
-        ImU32 error_bar_stroke_col = NULL;
+        ImU32 error_bar_stroke_col = 0;
         float error_bar_stroke_width = 1.0f;
-        char* error_bar_cap_style = "Straight"; ///< Options are "Straight", "Circular"
+        const char* error_bar_cap_style = "Straight"; ///< Options are "Straight", "Circular"
         float error_bar_cap_width = 4.0f;
     };
 
@@ -593,7 +587,7 @@ namespace ImGui
     public:
         /**
         * @brief Draw Error Bars
-        * 
+        *
         * @param figure The figure to draw on
         * @param dx1 Upper error bar lengths
         * @param dx2 Lower error bar lengths
@@ -608,10 +602,8 @@ namespace ImGui
             if (window->SkipItems)
                 return;
 
-            ImGuiContext& g = *GImGui;
-
             for (int n = 0; n < n_data; ++n)
-            {            
+            {
                 // error bars
                 const float centre_scaled_x = figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n]);
                 const float centre_scaled_y = figure.GetScalesY()->Scale(y_data[n]) + error_offset;
@@ -619,13 +611,13 @@ namespace ImGui
                 const ImVec2 point = ImVec2(centre_scaled_x, centre_scaled_y);
                 const ImVec2 error_high = ImVec2(figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n] + dx1[n]), centre_scaled_y);
                 const ImVec2 error_low = ImVec2(figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n] - dx2[n]), centre_scaled_y);
-                
+
                 window->DrawList->AddLine(point, error_high, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
                 window->DrawList->AddLine(point, error_low, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
 
                 // caps
                 if (strcmp(properties_.error_bar_cap_style, "Straight")==0)
-                {                
+                {
                     if (dx1[n] > 0)
                     {
                         const ImVec2 error_high_down = ImVec2(figure.GetScalesX()->Scale(x_data[n] + error_bottoms[n] + dx1[n]), centre_scaled_y - properties_.error_bar_cap_width * 0.5);
@@ -645,7 +637,7 @@ namespace ImGui
 
         /**
         * @brief Draw Error Bars
-        * 
+        *
         * @param figure The figure to draw on
         * @param dy1 Upper error bar lengths
         * @param dy2 Lower error bar lengths
@@ -660,10 +652,8 @@ namespace ImGui
             if (window->SkipItems)
                 return;
 
-            ImGuiContext& g = *GImGui;
-
             for (int n = 0; n < n_data; ++n)
-            {            
+            {
                 // error bars
                 const float centre_scaled_x = figure.GetScalesX()->Scale(x_data[n]) + error_offset;
                 const float centre_scaled_y = figure.GetScalesY()->Scale(y_data[n] + error_bottoms[n]);
@@ -671,13 +661,13 @@ namespace ImGui
                 const ImVec2 point = ImVec2(centre_scaled_x, centre_scaled_y);
                 const ImVec2 error_high = ImVec2(centre_scaled_x, figure.GetScalesY()->Scale(y_data[n] + error_bottoms[n] + dy1[n]));
                 const ImVec2 error_low = ImVec2(centre_scaled_x, figure.GetScalesY()->Scale(y_data[n] + error_bottoms[n] - dy2[n]));
-                
+
                 window->DrawList->AddLine(point, error_high, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
                 window->DrawList->AddLine(point, error_low, properties_.error_bar_stroke_col, properties_.error_bar_stroke_width);
 
                 // caps
                 if (strcmp(properties_.error_bar_cap_style, "Straight")==0)
-                {                
+                {
                     if (dy1[n] > 0)
                     {
                     const ImVec2 error_high_left = ImVec2(centre_scaled_x - properties_.error_bar_cap_width * 0.5,
@@ -698,7 +688,7 @@ namespace ImGui
                 }
             }
         };
-        
+
         void SetProperties(ImErrorBarProperties& properties){properties_ = properties;}
 
     private:
@@ -709,7 +699,7 @@ namespace ImGui
     struct ImLabelProperties
     {
         ImFont* label_font = NULL;  ///< Label font
-        ImU32 label_font_col = NULL;  ///< Label font color
+        ImU32 label_font_col = 0;  ///< Label font color
         float label_font_size = 12.0f;  ///< Label font size
         ImVec2 label_offset_pos = ImVec2(0.0f, 0.0f); ///< Offset position of the label
     };
@@ -720,7 +710,7 @@ namespace ImGui
     public:
         /**
         * @brief Draw Labels
-        * 
+        *
         * @param figure The figure to draw on
         * @param x_data
         * @param y_data
@@ -741,7 +731,7 @@ namespace ImGui
             if (labels == NULL) return;
 
             for (int n = 0; n < n_data; ++n)
-            {            
+            {
                 // labels
                 const float centre_scaled_x = figure.GetScalesX()->Scale(x_data[n] + x_bottoms[0]) + x_offset;
                 const float centre_scaled_y = figure.GetScalesY()->Scale(y_data[n] + y_bottoms[0]) + y_offset;
@@ -755,12 +745,10 @@ namespace ImGui
             if (window->SkipItems)
                 return;
 
-            ImGuiContext& g = *GImGui;
-
             if (labels == NULL) return;
 
             for (int n = 0; n < n_data; ++n)
-            {            
+            {
                 // labels
                 const float centre_scaled_x = figure.GetScalesX()->Scale(x_data[n]);
                 const float centre_scaled_y = figure.GetScalesY()->Scale(y_data[n]);
@@ -776,10 +764,10 @@ namespace ImGui
     // ## Markers (for e.g., scatter plot)
     struct ImMarkerProperties
     {
-        ImU32 marker_stroke_col = NULL;  ///< circle (or other symbol) stroke color
+        ImU32 marker_stroke_col = 0;  ///< circle (or other symbol) stroke color
         float marker_stroke_width = 1.0f;  ///< circle (or other symbol) stroke width
-        ImU32 marker_fill_col = NULL;  ///< circle (or other symbol) fill color
-        ImU32 marker_hovered_col = NULL;  ///< circle (or other symbol) fill color on hover
+        ImU32 marker_fill_col = 0;  ///< circle (or other symbol) fill color
+        ImU32 marker_hovered_col = 0;  ///< circle (or other symbol) fill color on hover
         // char* tool_tip_format = "%4.2f"; ///< tooltip format
     };
 
@@ -789,7 +777,7 @@ namespace ImGui
     public:
         /**
         * @brief Draw Markers
-        * 
+        *
         * @param figure The figure to draw on
         * @param x_data
         * @param y_data
@@ -808,7 +796,6 @@ namespace ImGui
 
             ImGuiContext& g = *GImGui;
 
-            int t0 = 0;
             for (int n = 0; n < n_data; ++n)
             {
                 // Points
@@ -817,9 +804,9 @@ namespace ImGui
                 window->DrawList->AddCircleFilled(ImVec2(centre_scaled_x, centre_scaled_y), r_data[n], properties_.marker_fill_col, 12);
 
                 // Tooltip on hover
-                if (centre_scaled_x - r_data[n] <= g.IO.MousePos.x && 
+                if (centre_scaled_x - r_data[n] <= g.IO.MousePos.x &&
                 centre_scaled_x + r_data[n] >= g.IO.MousePos.x &&
-                centre_scaled_y - r_data[n] <= g.IO.MousePos.y && 
+                centre_scaled_y - r_data[n] <= g.IO.MousePos.y &&
                 centre_scaled_y + r_data[n] >= g.IO.MousePos.y)
                 {
                     SetTooltip("%s\n%s: %8.4g\n%s: %8.4g", series, "x", x_data[n], "y", y_data[n]);
@@ -836,11 +823,11 @@ namespace ImGui
     // ## Lines (for e.g., line plot)
     struct ImLineProperties
     {
-        ImU32 line_stroke_col = NULL;  ///< line stroke color
+        ImU32 line_stroke_col = 0;  ///< line stroke color
         float line_stroke_width = 1.5f;  ///< line stroke width
         float line_stroke_dash = 0.0f;  ///< spacing of the dash
         float line_stroke_gap = 0.0f;   ///< spacing between dashes
-        char* line_interp = "None";  ///< "None" for a straight line and "Bezier" for a curved line
+        const char* line_interp = "None";  ///< "None" for a straight line and "Bezier" for a curved line
     };
 
     template<typename Ta, typename Tb>
@@ -849,7 +836,7 @@ namespace ImGui
     public:
         /**
         * @brief Draw Lines
-        * 
+        *
         * @param figure The figure to draw on
         * @param x_data
         * @param y_data
@@ -863,7 +850,6 @@ namespace ImGui
             if (window->SkipItems)
                 return;
 
-            int t0 = 0;
             for (int n = 0; n < n_data; ++n)
             {
                 // Line
@@ -890,10 +876,10 @@ namespace ImGui
     struct ImBarProperties
     {
         float bar_width = 10.0f;
-        ImU32 bar_stroke_col = NULL;
+        ImU32 bar_stroke_col = 0;
         float bar_stroke_width = 1.0f;
-        ImU32 bar_fill_col = NULL;
-        ImU32 bar_hovered_col = NULL;
+        ImU32 bar_fill_col = 0;
+        ImU32 bar_hovered_col = 0;
     };
 
     /**
@@ -908,7 +894,7 @@ namespace ImGui
     public:
         /**
         * @brief Draw vertical Bars
-        * 
+        *
         * @param figure The figure to draw on
         * @param y_data
         * @param n_data
@@ -933,7 +919,7 @@ namespace ImGui
                 // const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + bar_offset,
                 //     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n]));
                 // const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + properties_.bar_width + bar_offset,
-                //     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n] + y_data[n]));               
+                //     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n] + y_data[n]));
                 const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + bar_offset,
                     figure.GetScalesY()->Scale(bar_bottoms[n]));
                 const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + properties_.bar_width + bar_offset,
@@ -957,7 +943,7 @@ namespace ImGui
 
         /**
         * @brief Draw horizontal Bars
-        * 
+        *
         * @param figure The figure to draw on
         * @param y_data
         * @param n_data
@@ -981,7 +967,7 @@ namespace ImGui
                 // const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + bar_offset,
                 //     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n]));
                 // const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + properties_.bar_width + bar_offset,
-                //     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n] + y_data[n]));               
+                //     figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->Scale(bar_bottoms[n] + y_data[n]));
                 const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->Scale(bar_bottoms[n]),
                     figure.GetScalesY()->GetRangeMin() + n*bar_span + bar_offset);
                 const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->Scale(bar_bottoms[n] + x_data[n]),
@@ -1013,9 +999,9 @@ namespace ImGui
     {
         float inner_radius = 0.0f; ///< change to create a donught plot
         float outer_radius = 100.0f; ///< controls the size of the pie
-        ImU32 pie_stroke_col = NULL;
+        ImU32 pie_stroke_col = 0;
         float pie_stroke_width = 1.0f;
-        ImU32 pie_hovered_col = NULL;
+        ImU32 pie_hovered_col = 0;
         int pie_segments = 128; ///< number of segments to use when drawing the circle
                                 // if this is too low, the segment will not be drawn!
     };
@@ -1026,7 +1012,7 @@ namespace ImGui
     public:
         /**
         * @brief Draw Pie
-        * 
+        *
         * @param figure The figure to draw on
         * @param x_data Numerical values
         * @param y_data Color used for each of the pie segments
@@ -1035,12 +1021,10 @@ namespace ImGui
         */
         void DrawPie(ImPlot<Ta, Tb>& figure,
             const Ta* x_data, const ImU32* colors, const int& n_data)
-        {                
+        {
             ImGuiWindow* window = GetCurrentWindow();
             if (window->SkipItems)
                 return;
-
-            ImGuiContext& g = *GImGui;
 
             // calculate the total x
             float x_data_total = 0;
@@ -1052,7 +1036,7 @@ namespace ImGui
             // add each arc
             float x_data_prev_rad = 0.0f;
             for (int n = 0; n < n_data; ++n)
-            {                
+            {
                 const float x_data_rad = IM_PI*2.0f*x_data[n]/x_data_total + x_data_prev_rad;  // convert x_data to radians
                 const int n_segments = (int)(x_data[n]/x_data_total*(float)properties_.pie_segments);  // determine the number of segments
                 const ImVec2 centre = ImVec2(
@@ -1062,18 +1046,18 @@ namespace ImGui
 
                 // start: end of the outer arc.  end: start of the inner arc
                 const ImVec2 vec1 = ImVec2(
-                    ImCos(x_data_rad)*properties_.inner_radius + centre.x, 
+                    ImCos(x_data_rad)*properties_.inner_radius + centre.x,
                     ImSin(x_data_rad)*properties_.inner_radius + centre.y);
 
                 // start: end of the inner arc.  end: start of the outer arc
                 const ImVec2 vec2 = ImVec2(
-                    ImCos(x_data_prev_rad)*properties_.outer_radius + centre.x, 
+                    ImCos(x_data_prev_rad)*properties_.outer_radius + centre.x,
                     ImSin(x_data_prev_rad)*properties_.outer_radius + centre.y);
 
                 // draw the pie segment
                 window->DrawList->PathArcTo(centre, properties_.outer_radius, x_data_prev_rad, x_data_rad, n_segments);  // outer arc
                 window->DrawList->PathLineTo(vec1);  // start outer to inner arc line
-                window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_rad, x_data_prev_rad, n_segments);  // inner arc 
+                window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_rad, x_data_prev_rad, n_segments);  // inner arc
                 window->DrawList->PathLineTo(vec2);  // end outer to inner arc line
                 window->DrawList->PathFillConvex(colors[n]);
 

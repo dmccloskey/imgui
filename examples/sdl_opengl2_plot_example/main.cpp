@@ -112,7 +112,7 @@ int main(int, char**)
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
-            ImGui::Begin("Scatter plot", &show_plot_test, NULL);
+            ImGui::Begin("Scatter plot", &show_plot_test);
 
             // Figure
             ImGui::ImPlotProperties figure_properties;
@@ -208,7 +208,7 @@ int main(int, char**)
             ImGui::ImLegendProperties legend_properties;
             legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             legend_properties.stroke_width = 1.0f;
-            legend_properties.fill_col = NULL; 
+            legend_properties.fill_col = 0;
             legend_properties.series_font = io.FontDefault;
             legend_properties.series_font_size = 18.0f;
             legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -262,7 +262,7 @@ int main(int, char**)
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
-            ImGui::Begin("Bar plot (staggered)", &show_plot_test, NULL);
+            ImGui::Begin("Bar plot (staggered)", &show_plot_test);
 
             // Figure
             ImGui::ImPlotProperties figure_properties;
@@ -284,7 +284,7 @@ int main(int, char**)
             // Bars 1-3
             ImGui::ImBarProperties bar_properties;
             bar_properties.bar_width = 10.0f;
-            bar_properties.bar_stroke_col = NULL;
+            bar_properties.bar_stroke_col = 0;
             bar_properties.bar_stroke_width = 1.0f;
 
             ImGui::ImBars<float, float> Bars;
@@ -344,7 +344,7 @@ int main(int, char**)
             ImGui::ImLegendProperties legend_properties;
             legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             legend_properties.stroke_width = 1.0f;
-            legend_properties.fill_col = NULL; 
+            legend_properties.fill_col = 0;
             legend_properties.series_font = io.FontDefault;
             legend_properties.series_font_size = 18.0f;
             legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -398,7 +398,7 @@ int main(int, char**)
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
-            ImGui::Begin("BarH plot (staggered)", &show_plot_test, NULL);
+            ImGui::Begin("BarH plot (staggered)", &show_plot_test);
 
             // Figure
             ImGui::ImPlotProperties figure_properties;
@@ -420,7 +420,7 @@ int main(int, char**)
             // Bars 1-3
             ImGui::ImBarProperties bar_properties;
             bar_properties.bar_width = 10.0f;
-            bar_properties.bar_stroke_col = NULL;
+            bar_properties.bar_stroke_col = 0;
             bar_properties.bar_stroke_width = 1.0f;
 
             ImGui::ImBars<float, float> Bars;
@@ -480,7 +480,7 @@ int main(int, char**)
             ImGui::ImLegendProperties legend_properties;
             legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             legend_properties.stroke_width = 1.0f;
-            legend_properties.fill_col = NULL; 
+            legend_properties.fill_col = 0;
             legend_properties.series_font = io.FontDefault;
             legend_properties.series_font_size = 18.0f;
             legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -534,7 +534,7 @@ int main(int, char**)
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
-            ImGui::Begin("Bar plot (stacked)", &show_plot_test, NULL);
+            ImGui::Begin("Bar plot (stacked)", &show_plot_test);
 
             // Figure
             ImGui::ImPlotProperties figure_properties;
@@ -556,7 +556,7 @@ int main(int, char**)
             // Bars 1-3
             ImGui::ImBarProperties bar_properties;
             bar_properties.bar_width = 20.0f;
-            bar_properties.bar_stroke_col = NULL;
+            bar_properties.bar_stroke_col = 0;
             bar_properties.bar_stroke_width = 1.0f;
 
             ImGui::ImBars<float, float> Bars;
@@ -600,7 +600,7 @@ int main(int, char**)
             ImGui::ImLegendProperties legend_properties;
             legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             legend_properties.stroke_width = 1.0f;
-            legend_properties.fill_col = NULL; 
+            legend_properties.fill_col = 0;
             legend_properties.series_font = io.FontDefault;
             legend_properties.series_font_size = 18.0f;
             legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -655,7 +655,7 @@ int main(int, char**)
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
-            ImGui::Begin("Pie chart", &show_plot_test, NULL);
+            ImGui::Begin("Pie chart", &show_plot_test);
 
             // Figure
             ImGui::ImPlotProperties figure_properties;
@@ -678,9 +678,9 @@ int main(int, char**)
             ImGui::ImPieProperties pie_properties;
             pie_properties.inner_radius = 10.0f; 
             pie_properties.outer_radius = 100.0f; 
-            pie_properties.pie_stroke_col = NULL;
+            pie_properties.pie_stroke_col = 0;
             pie_properties.pie_stroke_width = 1.0f;
-            pie_properties.pie_hovered_col = NULL;
+            pie_properties.pie_hovered_col = 0;
             pie_properties.pie_segments = 256;
 
             ImGui::ImPie<float, float> Pie;
@@ -693,7 +693,7 @@ int main(int, char**)
             ImGui::ImLegendProperties legend_properties;
             legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             legend_properties.stroke_width = 1.0f;
-            legend_properties.fill_col = NULL; 
+            legend_properties.fill_col = 0;
             legend_properties.series_font = io.FontDefault;
             legend_properties.series_font_size = 18.0f;
             legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));

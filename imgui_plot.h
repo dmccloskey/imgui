@@ -1072,6 +1072,56 @@ namespace ImGui
         ImPieProperties properties_;
     };
 
+    class ImAreaProperties : public ImLineProperties, public ImBarProperties
+    {
+    };
+
+    template<typename Ta, typename Tb>
+    class ImArea
+    {
+    public:
+        void DrawArea(
+            ImPlot<Ta, Tb>& figure,
+            const Ta* x_data,
+            const Tb* y_data,
+            const size_t n_data,
+            float * const y_data_bottoms = NULL
+        )
+        {
+            if (n_data < 2) return;
+
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            if (y_data_bottoms) {
+                for (size_t i = 0; i < n_data; ++i) {
+                    y_data_bottoms[i] += y_data[i];
+                }
+            }
+            float const * const y = y_data_bottoms ? y_data_bottoms : y_data;
+
+            ImScales<Ta, float>* scalesX = figure.GetScalesX();
+            ImScales<Tb, float>* scalesY = figure.GetScalesY();
+            ImDrawList* dl = window->DrawList;
+            dl->PathClear();
+            dl->PathLineTo(ImVec2(scalesX->Scale(x_data[0]), scalesY->Scale(y[0] - y_data[0])));
+            for (size_t i = 0; i < n_data; ++i) {
+                dl->PathLineTo(ImVec2(scalesX->Scale(x_data[i]), scalesY->Scale(y[i])));
+            }
+            dl->PathLineTo(ImVec2(scalesX->Scale(x_data[n_data-1]), scalesY->Scale(y[n_data-1] - y_data[n_data-1])));
+            dl->PathFillConvex(properties_.bar_fill_col);
+        };
+
+        void SetProperties(ImAreaProperties& properties)
+        {
+            properties_ = properties;
+        }
+
+    private:
+        ImAreaProperties properties_;
+    };
+
     // # High level plotting functions
 
     // ## Charts

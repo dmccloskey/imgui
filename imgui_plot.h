@@ -1104,7 +1104,6 @@ namespace ImGui
             ImScales<Ta, float>* scalesX = figure.GetScalesX();
             ImScales<Tb, float>* scalesY = figure.GetScalesY();
             ImDrawList* dl = window->DrawList;
-            dl->PathClear();
             dl->PathLineTo(ImVec2(scalesX->Scale(x_data[0]), scalesY->Scale(y[0] - y_data[0])));
             for (size_t i = 0; i < n_data; ++i) {
                 dl->PathLineTo(ImVec2(scalesX->Scale(x_data[i]), scalesY->Scale(y[i])));

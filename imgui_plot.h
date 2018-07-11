@@ -1072,8 +1072,9 @@ namespace ImGui
         ImPieProperties properties_;
     };
 
-    class ImAreaProperties : public ImLineProperties, public ImBarProperties
+    struct ImAreaProperties
     {
+        ImU32 area_fill_col = 0;
     };
 
     template<typename Ta, typename Tb>
@@ -1101,15 +1102,15 @@ namespace ImGui
             }
             float const * const y = y_data_bottoms ? y_data_bottoms : y_data;
 
-            ImScales<Ta, float>* scalesX = figure.GetScalesX();
-            ImScales<Tb, float>* scalesY = figure.GetScalesY();
             ImDrawList* dl = window->DrawList;
-            dl->PathLineTo(ImVec2(scalesX->Scale(x_data[0]), scalesY->Scale(y[0] - y_data[0])));
+            dl->PathLineTo(ImVec2(figure.GetScalesX()->Scale(x_data[0]), figure.GetScalesY()->Scale(y[0] - y_data[0])));
+
             for (size_t i = 0; i < n_data; ++i) {
-                dl->PathLineTo(ImVec2(scalesX->Scale(x_data[i]), scalesY->Scale(y[i])));
+                dl->PathLineTo(ImVec2(figure.GetScalesX()->Scale(x_data[i]), figure.GetScalesY()->Scale(y[i])));
             }
-            dl->PathLineTo(ImVec2(scalesX->Scale(x_data[n_data-1]), scalesY->Scale(y[n_data-1] - y_data[n_data-1])));
-            dl->PathFillConvex(properties_.bar_fill_col);
+
+            dl->PathLineTo(ImVec2(figure.GetScalesX()->Scale(x_data[n_data-1]), figure.GetScalesY()->Scale(y[n_data-1] - y_data[n_data-1])));
+            dl->PathFillConvex(properties_.area_fill_col);
         };
 
         void SetProperties(ImAreaProperties& properties)

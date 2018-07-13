@@ -764,16 +764,19 @@ int main(int, char**)
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
             // area_properties.hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
+            area_properties.tooltip = "series 1";
             Areas.SetProperties(area_properties);
             Areas.DrawArea(Figure, x_data, y_data1, n_data);
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
             // area_properties.hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
+            area_properties.tooltip = "series 2";
             Areas.SetProperties(area_properties);
             Areas.DrawArea(Figure, x_data, y_data2, n_data);
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));
             // area_properties.hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
+            area_properties.tooltip = "series 3";
             Areas.SetProperties(area_properties);
             Areas.DrawArea(Figure, x_data, y_data3, n_data);
 
@@ -837,7 +840,7 @@ int main(int, char**)
 
             // Color scales
             ImGui::ImLinearScales<float, ImVec4> scales_color;
-            scales_color.SetDomain(0.0f, 2.0f);
+            scales_color.SetDomain(0.0f, 3.0f);
             scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
 
             // ImGui::SetNextWindowPos(ImVec2(0,0));
@@ -868,17 +871,20 @@ int main(int, char**)
             ImGui::ImArea<float, float> Areas;
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
-            // area_properties.hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
+            area_properties.area_hover_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(3));
+            area_properties.tooltip = "series 1";
             Areas.SetProperties(area_properties);
             Areas.DrawArea(Figure, x_data, y_data1, n_data, y_data_bottoms);
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
-            // area_properties.hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
+            area_properties.area_hover_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(3));
+            area_properties.tooltip = "series 2";
             Areas.SetProperties(area_properties);
             Areas.DrawArea(Figure, x_data, y_data2, n_data, y_data_bottoms);
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));
-            // area_properties.hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
+            area_properties.area_hover_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(3));
+            area_properties.tooltip = "series 3";
             Areas.SetProperties(area_properties);
             Areas.DrawArea(Figure, x_data, y_data3, n_data, y_data_bottoms);
 

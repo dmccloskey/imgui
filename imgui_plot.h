@@ -10,6 +10,7 @@
 #include "imgui_internal.h"
 
 #include <iostream> //delete when finished debugging
+#include <vector>
 
 namespace ImGui
 {
@@ -1075,6 +1076,8 @@ namespace ImGui
     struct ImAreaProperties
     {
         ImU32 area_fill_col = 0;
+        ImU32 area_hover_col = 0;
+        const char* tooltip = NULL;
     };
 
     template<typename Ta, typename Tb>
@@ -1102,14 +1105,32 @@ namespace ImGui
             }
             float const * const y = y_data_bottoms ? y_data_bottoms : y_data;
 
+            std::vector<ImVec2> v;
+
             ImDrawList* dl = window->DrawList;
-            dl->PathLineTo(ImVec2(figure.GetScalesX()->Scale(x_data[0]), figure.GetScalesY()->Scale(y[0] - y_data[0])));
+            v.emplace_back(figure.GetScalesX()->Scale(x_data[0]), figure.GetScalesY()->Scale(y[0] - y_data[0]));
+            dl->PathLineTo(v.back());
 
             for (size_t i = 0; i < n_data; ++i) {
-                dl->PathLineTo(ImVec2(figure.GetScalesX()->Scale(x_data[i]), figure.GetScalesY()->Scale(y[i])));
+                v.emplace_back(figure.GetScalesX()->Scale(x_data[i]), figure.GetScalesY()->Scale(y[i]));
+                dl->PathLineTo(v.back());
             }
 
-            dl->PathLineTo(ImVec2(figure.GetScalesX()->Scale(x_data[n_data-1]), figure.GetScalesY()->Scale(y[n_data-1] - y_data[n_data-1])));
+            v.emplace_back(figure.GetScalesX()->Scale(x_data[n_data-1]), figure.GetScalesY()->Scale(y[n_data-1] - y_data[n_data-1]));
+            dl->PathLineTo(v.back());
+
+            ImVec2 pointer(GImGui->IO.MousePos.x, GImGui->IO.MousePos.y);
+
+            const bool check = is_inside_area(pointer, v);
+
+            if (check && properties_.tooltip) {
+                SetTooltip("%s", properties_.tooltip);
+            }
+
+            if (check && properties_.area_hover_col) {
+                dl->PathFillConvex(properties_.area_hover_col);
+            }
+
             dl->PathFillConvex(properties_.area_fill_col);
         };
 
@@ -1120,6 +1141,30 @@ namespace ImGui
 
     private:
         ImAreaProperties properties_;
+
+        bool is_inside_area(const ImVec2& P, const std::vector<ImVec2>& V) const
+        {
+            size_t cn = 0; // the crossing number counter
+            size_t n = V.size();
+
+            if (n < 3) return false;
+
+            size_t i = 0;
+            size_t j = 1;
+
+            while (i < n) {
+                if (((V[i].y <= P.y) && (V[j].y > P.y)) || ((V[i].y > P.y) && (V[j].y <= P.y))) {
+                    float vt = (float)(P.y - V[i].y) / (V[j].y - V[i].y);
+                    if (P.x < V[i].x + vt * (V[j].x - V[i].x)) { // P.x < intersect
+                        ++cn; // a valid crossing of y=P.y right of P.x
+                    }
+                }
+                ++i;
+                j = (i + 1) % n;
+            }
+
+            return cn % 2 != 0; // false if even (out), and true if odd (in)
+        }
     };
 
     // # High level plotting functions

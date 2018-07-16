@@ -4,7 +4,7 @@
 
 CXX = g++
 
-EXE = example_sdl_opengl2_plot.out
+EXE = plot.out
 SOURCES = main.cpp ../imgui_impl_sdl.cpp ../imgui_impl_opengl2.cpp
 SOURCES += ../../imgui.cpp ../../imgui_demo.cpp ../../imgui_draw.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))

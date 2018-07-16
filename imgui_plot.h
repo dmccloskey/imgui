@@ -10,7 +10,6 @@
 #include "imgui_internal.h"
 
 #include <iostream> //delete when finished debugging
-#include <vector>
 
 namespace ImGui
 {
@@ -1105,18 +1104,19 @@ namespace ImGui
             }
             float const * const y = y_data_bottoms ? y_data_bottoms : y_data;
 
-            std::vector<ImVec2> v;
+            ImVector<ImVec2> v;
+            v.reserve(n_data + 2);
 
             ImDrawList* dl = window->DrawList;
-            v.emplace_back(figure.GetScalesX()->Scale(x_data[0]), figure.GetScalesY()->Scale(y[0] - y_data[0]));
+            v.push_back(ImVec2(figure.GetScalesX()->Scale(x_data[0]), figure.GetScalesY()->Scale(y[0] - y_data[0])));
             dl->PathLineTo(v.back());
 
             for (size_t i = 0; i < n_data; ++i) {
-                v.emplace_back(figure.GetScalesX()->Scale(x_data[i]), figure.GetScalesY()->Scale(y[i]));
+                v.push_back(ImVec2(figure.GetScalesX()->Scale(x_data[i]), figure.GetScalesY()->Scale(y[i])));
                 dl->PathLineTo(v.back());
             }
 
-            v.emplace_back(figure.GetScalesX()->Scale(x_data[n_data-1]), figure.GetScalesY()->Scale(y[n_data-1] - y_data[n_data-1]));
+            v.push_back(ImVec2(figure.GetScalesX()->Scale(x_data[n_data-1]), figure.GetScalesY()->Scale(y[n_data-1] - y_data[n_data-1])));
             dl->PathLineTo(v.back());
 
             ImVec2 pointer(GImGui->IO.MousePos.x, GImGui->IO.MousePos.y);
@@ -1142,7 +1142,7 @@ namespace ImGui
     private:
         ImAreaProperties properties_;
 
-        bool is_inside_area(const ImVec2& P, const std::vector<ImVec2>& V) const
+        bool is_inside_area(const ImVec2& P, const ImVector<ImVec2>& V) const
         {
             size_t cn = 0; // the crossing number counter
             size_t n = V.size();

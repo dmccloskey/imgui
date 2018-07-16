@@ -1008,6 +1008,31 @@ namespace ImGui
         ImBarProperties properties_;
     };
 
+    // # High level plotting functions
+
+    // ## Charts
+    // ### Basics
+    // - Line
+    // - Scatter
+    // - Bar (stacked)
+    // - Barh
+    // - BoxPlot
+    // - Area (stacked)
+    // - Heatmap
+    // - Histogram (density and binning)
+    // ### Advanced
+    // - Contour
+    // - Stem
+    // - Stream
+    // - Polar
+    // - Radar
+    // - Hexagonal binning
+    // - Histogram 2D
+    // - Violin
+    // - Joint
+    // - Strip
+    // - Swarm
+
     // ## Pie (for e.g., pie or donught plot)
     struct ImPieProperties
     {
@@ -1098,34 +1123,9 @@ namespace ImGui
     private:
         ImPieProperties properties_;
     };
-
-    // # High level plotting functions
-
-    // ## Charts
-    // ### Basics
-    // - Line
-    // - Scatter
-    // - Bar (stacked)
-    // - Barh
-    // - BoxPlot
-    // - Pie
-    // - Area (stacked)
-    // - Heatmap
-    // - Histogram (density and binning)
-    // ### Advanced
-    // - Contour
-    // - Stem
-    // - Stream
-    // - Polar
-    // - Radar
-    // - Hexagonal binning
-    // - Histogram 2D
-    // - Violin
-    // - Joint
-    // - Strip
-    // - Swarm
-
+    
     // ## Layouts and hierarchies
+    // - Pie
     // - circos layout
     // - swim lanes
     // - bundle diagram

@@ -30,6 +30,8 @@ namespace ImGui
     // static inline float*    ImQuaBSerp(float a, float b, float t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler
     // static inline ImVec4*   ImQuaBSerp(const ImVec4& a, const ImVec4& b, const ImVec4& t, int n, bool closed = false);                        //TODO [DM] Quantized BSpline sampler used for colors
 
+    bool is_inside_area(const ImVec2& P, const ImVector<ImVec2>& V);
+
     // ## Scales
     template<typename Ta, typename Tb>
     class ImScales
@@ -1141,31 +1143,31 @@ namespace ImGui
 
     private:
         ImAreaProperties properties_;
-
-        bool is_inside_area(const ImVec2& P, const ImVector<ImVec2>& V) const
-        {
-            size_t cn = 0; // the crossing number counter
-            size_t n = V.size();
-
-            if (n < 3) return false;
-
-            size_t i = 0;
-            size_t j = 1;
-
-            while (i < n) {
-                if (((V[i].y <= P.y) && (V[j].y > P.y)) || ((V[i].y > P.y) && (V[j].y <= P.y))) {
-                    float vt = (float)(P.y - V[i].y) / (V[j].y - V[i].y);
-                    if (P.x < V[i].x + vt * (V[j].x - V[i].x)) { // P.x < intersect
-                        ++cn; // a valid crossing of y=P.y right of P.x
-                    }
-                }
-                ++i;
-                j = (i + 1) % n;
-            }
-
-            return cn % 2 != 0; // false if even (out), and true if odd (in)
-        }
     };
+
+    bool is_inside_area(const ImVec2& P, const ImVector<ImVec2>& V)
+    {
+        size_t cn = 0; // the crossing number counter
+        size_t n = V.size();
+
+        if (n < 3) return false;
+
+        size_t i = 0;
+        size_t j = 1;
+
+        while (i < n) {
+            if (((V[i].y <= P.y) && (V[j].y > P.y)) || ((V[i].y > P.y) && (V[j].y <= P.y))) {
+                float vt = (float)(P.y - V[i].y) / (V[j].y - V[i].y);
+                if (P.x < V[i].x + vt * (V[j].x - V[i].x)) { // P.x < intersect
+                    ++cn; // a valid crossing of y=P.y right of P.x
+                }
+            }
+            ++i;
+            j = (i + 1) % n;
+        }
+
+        return cn % 2 != 0; // false if even (out), and true if odd (in)
+    }
 
     // # High level plotting functions
 

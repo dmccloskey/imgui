@@ -1078,7 +1078,6 @@ namespace ImGui
     {
         ImU32 area_fill_col = 0;
         ImU32 area_hover_col = 0;
-        const char* tooltip = NULL;
     };
 
     template<typename Ta, typename Tb>
@@ -1090,7 +1089,8 @@ namespace ImGui
             const Ta* x_data,
             const Tb* y_data,
             const size_t n_data,
-            float * const y_data_bottoms = NULL
+            float * const y_data_bottoms = NULL,
+            char const * const series = NULL
         )
         {
             if (n_data < 2) return;
@@ -1125,8 +1125,8 @@ namespace ImGui
 
             const bool check = is_inside_area(pointer, v);
 
-            if (check && properties_.tooltip) {
-                SetTooltip("%s", properties_.tooltip);
+            if (check && series) {
+                SetTooltip("%s", series);
             }
 
             if (check && properties_.area_hover_col) {

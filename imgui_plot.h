@@ -996,120 +996,6 @@ namespace ImGui
         ImBarProperties properties_;
     };
 
-    // # High level plotting functions
-
-    // ## Charts
-    // ### Basics
-    // - Line
-    // - Scatter
-    // - Bar (stacked)
-    // - Barh
-    // - BoxPlot
-    // - Area (stacked)
-    // - Heatmap
-    // - Histogram (density and binning)
-    // ### Advanced
-    // - Contour
-    // - Stem
-    // - Stream
-    // - Polar
-    // - Radar
-    // - Hexagonal binning
-    // - Histogram 2D
-    // - Violin
-    // - Joint
-    // - Strip
-    // - Swarm
-
-    // ## Pie (for e.g., pie or donught plot)
-    struct ImPieProperties
-    {
-        float inner_radius = 0.0f; ///< change to create a donught plot
-        float outer_radius = 100.0f; ///< controls the size of the pie
-        ImU32 pie_stroke_col = 0;
-        float pie_stroke_width = 1.0f;
-        ImU32 pie_hovered_col = 0;
-        int pie_segments = 128; ///< number of segments to use when drawing the circle
-                                // if this is too low, the segment will not be drawn!
-    };
-
-    template<typename Ta, typename Tb>
-    class ImPie
-    {
-    public:
-        /**
-        * @brief Draw Pie
-        *
-        * @param figure The figure to draw on
-        * @param x_data Numerical values
-        * @param y_data Color used for each of the pie segments
-        * @param n_data
-        *
-        */
-        void DrawPie(ImPlot<Ta, Tb>& figure,
-            const Ta* x_data, const ImU32* colors, const int& n_data)
-        {
-            ImGuiWindow* window = GetCurrentWindow();
-            if (window->SkipItems)
-                return;
-
-            // calculate the total x
-            float x_data_total = 0;
-            for (int n = 0; n < n_data; ++n)
-                x_data_total += x_data[n];
-
-            // float x_data_total = 100.0f; // DELETE when finished testing
-
-            // add each arc
-            float x_data_prev_rad = 0.0f;
-            for (int n = 0; n < n_data; ++n)
-            {
-                const float x_data_rad = IM_PI*2.0f*x_data[n]/x_data_total + x_data_prev_rad;  // convert x_data to radians
-                const int n_segments = (int)ceilf(x_data[n]/x_data_total*(float)properties_.pie_segments);  // determine the number of segments
-                const ImVec2 centre = ImVec2(
-                    (figure.GetScalesX()->GetRangeMin() + figure.GetScalesX()->GetRangeMax())/2,
-                    (figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->GetRangeMax())/2
-                );
-
-                // // line 1
-                // const ImVec2 vec_line_start = ImVec2(
-                //     ImCos(x_data_prev_rad)*properties_.inner_radius + centre.x, 
-                //     ImSin(x_data_prev_rad)*properties_.inner_radius + centre.y);
-                // const ImVec2 vec_line_end = ImVec2(
-                //     ImCos(x_data_prev_rad)*properties_.outer_radius + centre.x, 
-                //     ImSin(x_data_prev_rad)*properties_.outer_radius + centre.y);
-
-                // start: end of the outer arc.  end: start of the inner arc
-                const ImVec2 vec1 = ImVec2(
-                    ImCos(x_data_rad)*properties_.inner_radius + centre.x,
-                    ImSin(x_data_rad)*properties_.inner_radius + centre.y);
-
-                // start: end of the inner arc.  end: start of the outer arc
-                const ImVec2 vec2 = ImVec2(
-                    ImCos(x_data_prev_rad)*properties_.outer_radius + centre.x,
-                    ImSin(x_data_prev_rad)*properties_.outer_radius + centre.y);
-
-                // draw the pie segment
-                // window->DrawList->AddLine(vec_line_start, vec_line_end, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
-                window->DrawList->PathArcTo(centre, properties_.outer_radius, x_data_prev_rad, x_data_rad, n_segments);  // outer arc
-                window->DrawList->PathLineTo(vec1);  // start outer to inner arc line
-                window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_rad, x_data_prev_rad, n_segments);  // inner arc 
-                window->DrawList->PathLineTo(vec2);  // end inner arc to outer arc line
-                window->DrawList->PathFillConvex(colors[n]);
-
-                // add labels
-
-                // [TODO: Tooltip on hover]
-
-                x_data_prev_rad = x_data_rad;
-            }
-        }
-
-        void SetProperties(ImPieProperties& properties){properties_ = properties;}
-    private:
-        ImPieProperties properties_;
-    };
-
     struct ImAreaProperties
     {
         ImU32 area_fill_col = 0;
@@ -1125,8 +1011,8 @@ namespace ImGui
             const Ta* x_data,
             const Tb* y_data,
             const size_t n_data,
-            float * const y_data_bottoms = NULL,
-            char const * const series = NULL
+            const Tb * y_data_bottoms,
+            const char* series = NULL
         )
         {
             if (n_data < 2) return;
@@ -1135,31 +1021,17 @@ namespace ImGui
             if (window->SkipItems)
                 return;
 
-            if (y_data_bottoms) {
-                for (size_t i = 0; i < n_data; ++i) {
-                    y_data_bottoms[i] += y_data[i];
-                }
-            }
-            float const * const y = y_data_bottoms ? y_data_bottoms : y_data;
-
-            ImVector<ImVec2> v;
-            v.reserve(n_data + 2);
-
             ImDrawList* dl = window->DrawList;
-            v.push_back(ImVec2(figure.GetScalesX()->Scale(x_data[0]), figure.GetScalesY()->Scale(y[0] - y_data[0])));
-            dl->PathLineTo(v.back());
+            dl->PathLineTo(ImVec2(figure.GetScalesX()->Scale(x_data[0]), figure.GetScalesY()->Scale(y_data_bottoms[0])));
 
-            for (size_t i = 0; i < n_data; ++i) {
-                v.push_back(ImVec2(figure.GetScalesX()->Scale(x_data[i]), figure.GetScalesY()->Scale(y[i])));
-                dl->PathLineTo(v.back());
-            }
+            for (size_t i = 0; i < n_data; ++i)
+                dl->PathLineTo(ImVec2(figure.GetScalesX()->Scale(x_data[i]), figure.GetScalesY()->Scale(y_data_bottoms[i] + y_data[i])));
 
-            v.push_back(ImVec2(figure.GetScalesX()->Scale(x_data[n_data-1]), figure.GetScalesY()->Scale(y[n_data-1] - y_data[n_data-1])));
-            dl->PathLineTo(v.back());
+            dl->PathLineTo(ImVec2(figure.GetScalesX()->Scale(x_data[n_data-1]), figure.GetScalesY()->Scale(y_data_bottoms[n_data-1])));
 
             ImVec2 pointer(GImGui->IO.MousePos.x, GImGui->IO.MousePos.y);
 
-            const bool check = is_inside_area(pointer, v);
+            const bool check = is_inside_area(pointer, dl->_Path);
 
             if (check && series) {
                 SetTooltip("%s", series);
@@ -1214,7 +1086,6 @@ namespace ImGui
     // - Bar (stacked)
     // - Barh
     // - BoxPlot
-    // - Pie
     // - Area (stacked)
     // - Heatmap
     // - Histogram (density and binning)
@@ -1230,6 +1101,97 @@ namespace ImGui
     // - Joint
     // - Strip
     // - Swarm
+
+    // ## Pie (for e.g., pie or donught plot)
+    struct ImPieProperties
+    {
+        float inner_radius = 0.0f; ///< change to create a donught plot
+        float outer_radius = 100.0f; ///< controls the size of the pie
+        ImU32 pie_stroke_col = 0;
+        float pie_stroke_width = 1.0f;
+        ImU32 pie_hovered_col = 0;
+        int pie_segments = 128; ///< number of segments to use when drawing the circle
+                                // if this is too low, the segment will not be drawn!
+    };
+
+    template<typename Ta, typename Tb>
+    class ImPie
+    {
+    public:
+        /**
+        * @brief Draw Pie
+        *
+        * @param figure The figure to draw on
+        * @param x_data Numerical values
+        * @param y_data Color used for each of the pie segments
+        * @param n_data
+        * @param series Name of the pie segment series (used for tooltip)
+        *
+        */
+        void DrawPie(ImPlot<Ta, Tb>& figure,
+            const Ta* x_data, const ImU32* colors, const int& n_data, const char* series[])
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            // calculate the total x
+            float x_data_total = 0;
+            for (int n = 0; n < n_data; ++n)
+                x_data_total += x_data[n];
+
+            // add each arc
+            float x_data_prev_rad = 0.0f;
+            for (int n = 0; n < n_data; ++n)
+            {
+                const float x_data_rad = IM_PI*2.0f*x_data[n]/x_data_total + x_data_prev_rad;  // convert x_data to radians
+                const int n_segments = (int)ceilf(x_data[n]/x_data_total*(float)properties_.pie_segments);  // determine the number of segments
+                const ImVec2 centre = ImVec2(
+                    (figure.GetScalesX()->GetRangeMin() + figure.GetScalesX()->GetRangeMax())/2,
+                    (figure.GetScalesY()->GetRangeMin() + figure.GetScalesY()->GetRangeMax())/2
+                );
+
+                // // line 1
+                // const ImVec2 vec_line_start = ImVec2(
+                //     ImCos(x_data_prev_rad)*properties_.inner_radius + centre.x, 
+                //     ImSin(x_data_prev_rad)*properties_.inner_radius + centre.y);
+                // const ImVec2 vec_line_end = ImVec2(
+                //     ImCos(x_data_prev_rad)*properties_.outer_radius + centre.x, 
+                //     ImSin(x_data_prev_rad)*properties_.outer_radius + centre.y);
+
+                // start: end of the outer arc.  end: start of the inner arc
+                const ImVec2 vec1 = ImVec2(
+                    ImCos(x_data_rad)*properties_.inner_radius + centre.x,
+                    ImSin(x_data_rad)*properties_.inner_radius + centre.y);
+
+                // start: end of the inner arc.  end: start of the outer arc
+                const ImVec2 vec2 = ImVec2(
+                    ImCos(x_data_prev_rad)*properties_.outer_radius + centre.x,
+                    ImSin(x_data_prev_rad)*properties_.outer_radius + centre.y);
+
+                // draw the pie segment
+                // window->DrawList->AddLine(vec_line_start, vec_line_end, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
+                window->DrawList->PathArcTo(centre, properties_.outer_radius, x_data_prev_rad, x_data_rad, n_segments);  // outer arc
+                window->DrawList->PathLineTo(vec1);  // start outer to inner arc line
+                window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_rad, x_data_prev_rad, n_segments);  // inner arc 
+                window->DrawList->PathLineTo(vec2);  // end inner arc to outer arc line
+                window->DrawList->PathFillConvex(colors[n]);             
+
+                // draw the tooltip
+                // [BUG: there appears to be a "gap" in the convex hull...]
+                if (is_inside_area(ImVec2(GImGui->IO.MousePos.x, GImGui->IO.MousePos.y), window->DrawList->_Path)) {
+                    SetTooltip("%s\n%s: %8.4g", series[n], "x", x_data[n]);
+                    window->DrawList->PathFillConvex(properties_.pie_hovered_col);
+                }
+
+                x_data_prev_rad = x_data_rad;
+            }
+        }
+
+        void SetProperties(ImPieProperties& properties){properties_ = properties;}
+    private:
+        ImPieProperties properties_;
+    };
 
     // ## Layouts and hierarchies
     // - Pie

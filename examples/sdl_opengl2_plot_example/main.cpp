@@ -681,7 +681,7 @@ int main(int, char**)
             ImGui::ImPie<float, float> Pie;
 
             Pie.SetProperties(pie_properties);
-            Pie.DrawPie(Figure, x_data, series_color, n_data);
+            Pie.DrawPie(Figure, x_data, series_color, n_data, labels);
             // Pie.DrawPie(Figure, x_data, series_color, 1);
 
             // Legend
@@ -712,6 +712,12 @@ int main(int, char**)
             const char* series[] = {"series1", "series2", "series3"};
 
             const size_t n_data = 7;
+
+            float y_data1_bottoms[7];
+            for (int n=0; n<n_data; ++n)
+            {
+                y_data1_bottoms[n] = 0.0f; // bottom positions
+            }
 
             // Data scales
             ImGui::ImLinearScales<float, float> scales_x;
@@ -753,15 +759,15 @@ int main(int, char**)
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
             Areas.SetProperties(area_properties);
-            Areas.DrawArea(Figure, x_data, y_data1, n_data, NULL, series[0]);
+            Areas.DrawArea(Figure, x_data, y_data1, n_data, y_data1_bottoms, series[0]);
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
             Areas.SetProperties(area_properties);
-            Areas.DrawArea(Figure, x_data, y_data2, n_data, NULL, series[1]);
+            Areas.DrawArea(Figure, x_data, y_data2, n_data, y_data1_bottoms, series[1]);
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));
             Areas.SetProperties(area_properties);
-            Areas.DrawArea(Figure, x_data, y_data3, n_data, NULL, series[2]);
+            Areas.DrawArea(Figure, x_data, y_data3, n_data, y_data1_bottoms, series[2]);
 
             // Axes
             ImGui::ImAxisProperties axis_properties;
@@ -813,7 +819,17 @@ int main(int, char**)
             const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
             const char* series[] = {"series1", "series2", "series3"};
             const size_t n_data = 7;
-            float y_data_bottoms[n_data] = {0.0f};
+
+            float y_data1_bottoms[7], y_data2_bottoms[7], y_data3_bottoms[7];
+            float y_max = 0;
+            for (int n=0; n<n_data; ++n)
+            {
+                y_data1_bottoms[n] = 0.0f;
+                y_data2_bottoms[n] = y_data1[n];
+                y_data3_bottoms[n] = y_data1[n] + y_data2[n];
+                const float y_sum = y_data1[n] + y_data2[n] + y_data3[n];
+                if (y_sum > y_max) y_max = y_sum;
+            }
 
             // Data scales
             ImGui::ImLinearScales<float, float> scales_x;
@@ -856,17 +872,17 @@ int main(int, char**)
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
             area_properties.area_hover_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(3));
             Areas.SetProperties(area_properties);
-            Areas.DrawArea(Figure, x_data, y_data1, n_data, y_data_bottoms, series[0]);
+            Areas.DrawArea(Figure, x_data, y_data1, n_data, y_data1_bottoms, series[0]);
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
             area_properties.area_hover_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(3));
             Areas.SetProperties(area_properties);
-            Areas.DrawArea(Figure, x_data, y_data2, n_data, y_data_bottoms, series[1]);
+            Areas.DrawArea(Figure, x_data, y_data2, n_data, y_data2_bottoms, series[1]);
 
             area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));
             area_properties.area_hover_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(3));
             Areas.SetProperties(area_properties);
-            Areas.DrawArea(Figure, x_data, y_data3, n_data, y_data_bottoms, series[2]);
+            Areas.DrawArea(Figure, x_data, y_data3, n_data, y_data3_bottoms, series[2]);
 
             // Axes
             ImGui::ImAxisProperties axis_properties;

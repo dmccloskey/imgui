@@ -630,23 +630,15 @@ int main(int, char**)
             // scales_x.SetDomain(0.0f, 6.0f);
             // scales_y.SetDomain(0.0f, 0.0f);
 
-<<<<<<< HEAD
             // Color scales            
             ImGui::ImLinearScales<float, ImVec4> scales_color; 
             scales_color.SetDomain(0.0f, 6.0f); 
             scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
-=======
-            // Color scales
-            ImGui::ImLinearScales<float, ImVec4> scales_color;
-            scales_color.SetDomain(0.0f, 7.0f);
-            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
->>>>>>> feature/imguiplotter
 
             ImU32 series_color[n_data];
             for (int i=0; i<n_data; ++i)
             {
                 series_color[i] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(i)));
-<<<<<<< HEAD
                 // [BUG: conversion from ImVec4 to ImU32 looses color information resulting
                 //       in only 3 colors (red, pink, and blue)]
                 // printf("x: %0.2f, y: %0.2f, z: %0.2f, w: %0.2f, U32: %i\n",
@@ -655,10 +647,6 @@ int main(int, char**)
                 //     ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(i))));
             }
             
-=======
-                // series_color[i] = ImGui::ColorConvertFloat4ToU32(series_color_vec4[i]);
-
->>>>>>> feature/imguiplotter
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;

@@ -1093,13 +1093,8 @@ namespace ImGui
                 // window->DrawList->AddLine(vec_line_start, vec_line_end, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
                 window->DrawList->PathArcTo(centre, properties_.outer_radius, x_data_prev_rad, x_data_rad, n_segments);  // outer arc
                 window->DrawList->PathLineTo(vec1);  // start outer to inner arc line
-<<<<<<< HEAD
                 window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_rad, x_data_prev_rad, n_segments);  // inner arc 
                 window->DrawList->PathLineTo(vec2);  // end inner arc to outer arc line
-=======
-                window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_rad, x_data_prev_rad, n_segments);  // inner arc
-                window->DrawList->PathLineTo(vec2);  // end outer to inner arc line
->>>>>>> feature/imguiplotter
                 window->DrawList->PathFillConvex(colors[n]);
 
                 // add labels
@@ -1114,9 +1109,6 @@ namespace ImGui
     private:
         ImPieProperties properties_;
     };
-<<<<<<< HEAD
-    
-=======
 
     struct ImAreaProperties
     {
@@ -1239,7 +1231,6 @@ namespace ImGui
     // - Strip
     // - Swarm
 
->>>>>>> feature/imguiplotter
     // ## Layouts and hierarchies
     // - Pie
     // - circos layout

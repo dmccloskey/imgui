@@ -39,7 +39,7 @@ int main(int, char**)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-    
+
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL2_Init();
 
@@ -48,8 +48,8 @@ int main(int, char**)
     //ImGui::StyleColorsClassic();
 
     // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them. 
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple. 
+    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
+    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
     // - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
     // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
     // - Read 'misc/fonts/README.txt' for more instructions and details.
@@ -98,21 +98,21 @@ int main(int, char**)
             const char* series[] = {"series1", "series2", "series3"};
             const int n_data = 7;
 
-            // Data scales         
-            ImGui::ImLinearScales<float, float> scales_x;   
-            ImGui::ImLinearScales<float, float> scales_y;   
+            // Data scales
+            ImGui::ImLinearScales<float, float> scales_x;
+            ImGui::ImLinearScales<float, float> scales_y;
             scales_x.SetDomain(0.0f, 6.0f);
             scales_y.SetDomain(0.0f, 6.0f);
 
-            // Color scales            
-            ImGui::ImLinearScales<float, ImVec4> scales_color; 
-            scales_color.SetDomain(0.0f, 2.0f); 
-            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
+            // Color scales
+            ImGui::ImLinearScales<float, ImVec4> scales_color;
+            scales_color.SetDomain(0.0f, 2.0f);
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
 
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
-            ImGui::Begin("Scatter plot", &show_plot_test, NULL);
+            ImGui::Begin("Scatter plot", &show_plot_test);
 
             // Figure
             ImGui::ImPlotProperties figure_properties;
@@ -138,15 +138,15 @@ int main(int, char**)
             marker_properties.marker_stroke_width = 1.0f;
             ImGui::ImMarkers<float, float> Markers;
 
-            marker_properties.marker_stroke_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));  
+            marker_properties.marker_stroke_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
             marker_properties.marker_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
             Markers.SetProperties(marker_properties);
             Markers.DrawMarkers(Figure, x_data, y_data1, r_data, n_data, series[0]);
-            marker_properties.marker_stroke_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));  
+            marker_properties.marker_stroke_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
             marker_properties.marker_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
             Markers.SetProperties(marker_properties);
             Markers.DrawMarkers(Figure, x_data, y_data2, r_data, n_data, series[1]);
-            marker_properties.marker_stroke_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));  
+            marker_properties.marker_stroke_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));
             marker_properties.marker_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));
             Markers.SetProperties(marker_properties);
             Markers.DrawMarkers(Figure, x_data, y_data3, r_data, n_data, series[2]);
@@ -166,7 +166,7 @@ int main(int, char**)
 
             // Lines 1-3
             ImGui::ImLineProperties line_properties;
-            line_properties.line_stroke_width = 1.5f; 
+            line_properties.line_stroke_width = 1.5f;
             line_properties.line_stroke_dash = 0.0f;
             line_properties.line_stroke_gap = 0.0f;
             line_properties.line_interp = "None";
@@ -192,7 +192,7 @@ int main(int, char**)
             axis_properties.axis_thickness = 2.0f;
             axis_properties.axis_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             axis_properties.axis_tick_font = io.FontDefault;
-            axis_properties.axis_tick_font_size = 12.0f; 
+            axis_properties.axis_tick_font_size = 12.0f;
             axis_properties.axis_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             axis_properties.grid_lines_thickness = 0.5f;
             axis_properties.grid_lines_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -208,7 +208,7 @@ int main(int, char**)
             ImGui::ImLegendProperties legend_properties;
             legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             legend_properties.stroke_width = 1.0f;
-            legend_properties.fill_col = NULL; 
+            legend_properties.fill_col = 0;
             legend_properties.series_font = io.FontDefault;
             legend_properties.series_font_size = 18.0f;
             legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -248,21 +248,21 @@ int main(int, char**)
                 y_data1_bottoms[n] = 0.0f; // bottom positions
             }
 
-            // Data scales         
-            ImGui::ImLinearScales<float, float> scales_x;   
-            ImGui::ImLinearScales<float, float> scales_y;   
+            // Data scales
+            ImGui::ImLinearScales<float, float> scales_x;
+            ImGui::ImLinearScales<float, float> scales_y;
             scales_x.SetDomain(0.0f, 6.0f);
             scales_y.SetDomain(0.0f, 6.0f);
 
-            // Color scales            
-            ImGui::ImLinearScales<float, ImVec4> scales_color; 
-            scales_color.SetDomain(0.0f, 2.0f); 
-            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
-            
+            // Color scales
+            ImGui::ImLinearScales<float, ImVec4> scales_color;
+            scales_color.SetDomain(0.0f, 2.0f);
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
+
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
-            ImGui::Begin("Bar plot (staggered)", &show_plot_test, NULL);
+            ImGui::Begin("Bar plot (staggered)", &show_plot_test);
 
             // Figure
             ImGui::ImPlotProperties figure_properties;
@@ -284,7 +284,7 @@ int main(int, char**)
             // Bars 1-3
             ImGui::ImBarProperties bar_properties;
             bar_properties.bar_width = 10.0f;
-            bar_properties.bar_stroke_col = NULL;
+            bar_properties.bar_stroke_col = 0;
             bar_properties.bar_stroke_width = 1.0f;
 
             ImGui::ImBars<float, float> Bars;
@@ -293,7 +293,7 @@ int main(int, char**)
             bar_properties.bar_hovered_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
             Bars.SetProperties(bar_properties);
             Bars.DrawBars(Figure, y_data1, n_data, 0*bar_properties.bar_width, y_data1_bottoms, series[0]);
-            
+
             bar_properties.bar_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
             bar_properties.bar_hovered_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
             Bars.SetProperties(bar_properties);
@@ -329,7 +329,7 @@ int main(int, char**)
             axis_properties.axis_thickness = 2.0f;
             axis_properties.axis_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             axis_properties.axis_tick_font = io.FontDefault;
-            axis_properties.axis_tick_font_size = 12.0f; 
+            axis_properties.axis_tick_font_size = 12.0f;
             axis_properties.axis_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
 
             ImGui::ImAxis<float, float> Axis;
@@ -344,7 +344,7 @@ int main(int, char**)
             ImGui::ImLegendProperties legend_properties;
             legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             legend_properties.stroke_width = 1.0f;
-            legend_properties.fill_col = NULL; 
+            legend_properties.fill_col = 0;
             legend_properties.series_font = io.FontDefault;
             legend_properties.series_font_size = 18.0f;
             legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -358,7 +358,7 @@ int main(int, char**)
             Legend.SetProperties(legend_properties);
             Legend.DrawLegend(Figure, "TR", series, series_color, 3);
 
-            ImGui::End(); 
+            ImGui::End();
         }
 
         // 2b. BarH plot demo (staggered)
@@ -384,21 +384,21 @@ int main(int, char**)
                 y_data1_bottoms[n] = 0.0f; // bottom positions
             }
 
-            // Data scales         
-            ImGui::ImLinearScales<float, float> scales_x;   
-            ImGui::ImLinearScales<float, float> scales_y;   
+            // Data scales
+            ImGui::ImLinearScales<float, float> scales_x;
+            ImGui::ImLinearScales<float, float> scales_y;
             scales_x.SetDomain(0.0f, 6.0f);
             scales_y.SetDomain(0.0f, 6.0f);
 
-            // Color scales            
-            ImGui::ImLinearScales<float, ImVec4> scales_color; 
-            scales_color.SetDomain(0.0f, 2.0f); 
-            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
-            
+            // Color scales
+            ImGui::ImLinearScales<float, ImVec4> scales_color;
+            scales_color.SetDomain(0.0f, 2.0f);
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
+
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
-            ImGui::Begin("BarH plot (staggered)", &show_plot_test, NULL);
+            ImGui::Begin("BarH plot (staggered)", &show_plot_test);
 
             // Figure
             ImGui::ImPlotProperties figure_properties;
@@ -420,7 +420,7 @@ int main(int, char**)
             // Bars 1-3
             ImGui::ImBarProperties bar_properties;
             bar_properties.bar_width = 10.0f;
-            bar_properties.bar_stroke_col = NULL;
+            bar_properties.bar_stroke_col = 0;
             bar_properties.bar_stroke_width = 1.0f;
 
             ImGui::ImBars<float, float> Bars;
@@ -429,7 +429,7 @@ int main(int, char**)
             bar_properties.bar_hovered_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
             Bars.SetProperties(bar_properties);
             Bars.DrawBarsH(Figure, y_data1, n_data, 0*bar_properties.bar_width, y_data1_bottoms, series[0]);
-            
+
             bar_properties.bar_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
             bar_properties.bar_hovered_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
             Bars.SetProperties(bar_properties);
@@ -465,7 +465,7 @@ int main(int, char**)
             axis_properties.axis_thickness = 2.0f;
             axis_properties.axis_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             axis_properties.axis_tick_font = io.FontDefault;
-            axis_properties.axis_tick_font_size = 12.0f; 
+            axis_properties.axis_tick_font_size = 12.0f;
             axis_properties.axis_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
 
             ImGui::ImAxis<float, float> Axis;
@@ -480,7 +480,7 @@ int main(int, char**)
             ImGui::ImLegendProperties legend_properties;
             legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             legend_properties.stroke_width = 1.0f;
-            legend_properties.fill_col = NULL; 
+            legend_properties.fill_col = 0;
             legend_properties.series_font = io.FontDefault;
             legend_properties.series_font_size = 18.0f;
             legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -494,7 +494,7 @@ int main(int, char**)
             Legend.SetProperties(legend_properties);
             Legend.DrawLegend(Figure, "TR", series, series_color, 3);
 
-            ImGui::End(); 
+            ImGui::End();
         }
 
         // 3. Bar plot demo (stacked)
@@ -520,21 +520,21 @@ int main(int, char**)
                 if (y_sum > y_max) y_max = y_sum;
             }
 
-            // Data scales         
-            ImGui::ImLinearScales<float, float> scales_x;   
-            ImGui::ImLinearScales<float, float> scales_y;   
+            // Data scales
+            ImGui::ImLinearScales<float, float> scales_x;
+            ImGui::ImLinearScales<float, float> scales_y;
             scales_x.SetDomain(0.0f, 6.0f);
             scales_y.SetDomain(0.0f, y_max);
 
-            // Color scales            
-            ImGui::ImLinearScales<float, ImVec4> scales_color; 
-            scales_color.SetDomain(0.0f, 2.0f); 
-            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
-            
+            // Color scales
+            ImGui::ImLinearScales<float, ImVec4> scales_color;
+            scales_color.SetDomain(0.0f, 2.0f);
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
+
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
-            ImGui::Begin("Bar plot (stacked)", &show_plot_test, NULL);
+            ImGui::Begin("Bar plot (stacked)", &show_plot_test);
 
             // Figure
             ImGui::ImPlotProperties figure_properties;
@@ -556,7 +556,7 @@ int main(int, char**)
             // Bars 1-3
             ImGui::ImBarProperties bar_properties;
             bar_properties.bar_width = 20.0f;
-            bar_properties.bar_stroke_col = NULL;
+            bar_properties.bar_stroke_col = 0;
             bar_properties.bar_stroke_width = 1.0f;
 
             ImGui::ImBars<float, float> Bars;
@@ -565,7 +565,7 @@ int main(int, char**)
             bar_properties.bar_hovered_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
             Bars.SetProperties(bar_properties);
             Bars.DrawBars(Figure, y_data1, n_data, 0.0f, y_data1_bottoms, series[0]);
-            
+
             bar_properties.bar_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
             bar_properties.bar_hovered_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
             Bars.SetProperties(bar_properties);
@@ -585,7 +585,7 @@ int main(int, char**)
             axis_properties.axis_thickness = 2.0f;
             axis_properties.axis_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             axis_properties.axis_tick_font = io.FontDefault;
-            axis_properties.axis_tick_font_size = 12.0f; 
+            axis_properties.axis_tick_font_size = 12.0f;
             axis_properties.axis_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
 
             ImGui::ImAxis<float, float> Axis;
@@ -600,7 +600,7 @@ int main(int, char**)
             ImGui::ImLegendProperties legend_properties;
             legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             legend_properties.stroke_width = 1.0f;
-            legend_properties.fill_col = NULL; 
+            legend_properties.fill_col = 0;
             legend_properties.series_font = io.FontDefault;
             legend_properties.series_font_size = 18.0f;
             legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -624,21 +624,29 @@ int main(int, char**)
             const char* labels[] = {"1", "2", "3", "4", "5", "6", "7"};
             const int n_data = 7;
 
-            // Data scales         
-            ImGui::ImLinearScales<float, float> scales_x;   
-            ImGui::ImLinearScales<float, float> scales_y;   
+            // Data scales
+            ImGui::ImLinearScales<float, float> scales_x;
+            ImGui::ImLinearScales<float, float> scales_y;
             // scales_x.SetDomain(0.0f, 6.0f);
             // scales_y.SetDomain(0.0f, 0.0f);
 
+<<<<<<< HEAD
             // Color scales            
             ImGui::ImLinearScales<float, ImVec4> scales_color; 
             scales_color.SetDomain(0.0f, 6.0f); 
             scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f)); 
+=======
+            // Color scales
+            ImGui::ImLinearScales<float, ImVec4> scales_color;
+            scales_color.SetDomain(0.0f, 7.0f);
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
+>>>>>>> feature/imguiplotter
 
             ImU32 series_color[n_data];
             for (int i=0; i<n_data; ++i)
             {
                 series_color[i] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(i)));
+<<<<<<< HEAD
                 // [BUG: conversion from ImVec4 to ImU32 looses color information resulting
                 //       in only 3 colors (red, pink, and blue)]
                 // printf("x: %0.2f, y: %0.2f, z: %0.2f, w: %0.2f, U32: %i\n",
@@ -647,10 +655,14 @@ int main(int, char**)
                 //     ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(i))));
             }
             
+=======
+                // series_color[i] = ImGui::ColorConvertFloat4ToU32(series_color_vec4[i]);
+
+>>>>>>> feature/imguiplotter
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
             bool show_plot_test = true;
-            ImGui::Begin("Pie chart", &show_plot_test, NULL);
+            ImGui::Begin("Pie chart", &show_plot_test);
 
             // Figure
             ImGui::ImPlotProperties figure_properties;
@@ -671,11 +683,11 @@ int main(int, char**)
 
             // Pie 1
             ImGui::ImPieProperties pie_properties;
-            pie_properties.inner_radius = 10.0f; 
-            pie_properties.outer_radius = 100.0f; 
-            pie_properties.pie_stroke_col = NULL;
+            pie_properties.inner_radius = 10.0f;
+            pie_properties.outer_radius = 100.0f;
+            pie_properties.pie_stroke_col = 0;
             pie_properties.pie_stroke_width = 1.0f;
-            pie_properties.pie_hovered_col = NULL;
+            pie_properties.pie_hovered_col = 0;
             pie_properties.pie_segments = 256;
 
             ImGui::ImPie<float, float> Pie;
@@ -688,7 +700,7 @@ int main(int, char**)
             ImGui::ImLegendProperties legend_properties;
             legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
             legend_properties.stroke_width = 1.0f;
-            legend_properties.fill_col = NULL; 
+            legend_properties.fill_col = 0;
             legend_properties.series_font = io.FontDefault;
             legend_properties.series_font_size = 18.0f;
             legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -696,6 +708,211 @@ int main(int, char**)
             ImGui::ImLegend<float, float> Legend;
             Legend.SetProperties(legend_properties);
             Legend.DrawLegend(Figure, "TR", labels, series_color, n_data);
+
+            ImGui::End();
+        }
+
+        // 5a. Area plot demo
+        {
+            // Data
+            const float y_data1[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+            const float y_data2[] = {2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
+            const float y_data3[] = {6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
+            const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+
+            const char* labels[] = {"1", "2", "3", "4", "5", "6", "7"};
+            const char* series[] = {"series1", "series2", "series3"};
+
+            const size_t n_data = 7;
+
+            // Data scales
+            ImGui::ImLinearScales<float, float> scales_x;
+            ImGui::ImLinearScales<float, float> scales_y;
+            scales_x.SetDomain(0.0f, 6.0f);
+            scales_y.SetDomain(0.0f, 6.0f);
+
+            // Color scales
+            ImGui::ImLinearScales<float, ImVec4> scales_color;
+            scales_color.SetDomain(0.0f, 2.0f);
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
+
+            // ImGui::SetNextWindowPos(ImVec2(0,0));
+            // ImGui::SetNextWindowSize(io.DisplaySize);
+            bool show_plot_test = true;
+            ImGui::Begin("Area plot", &show_plot_test);
+
+            // Figure
+            ImGui::ImPlotProperties figure_properties;
+            figure_properties.plot_size = ImVec2(500, 300);
+            figure_properties.margin_bottom = 50.0f;
+            figure_properties.margin_top = 50.0f;
+            figure_properties.margin_left = 50.0f;
+            figure_properties.margin_right = 100.0f;
+            figure_properties.title = "Area Plot";
+            figure_properties.title_font = io.FontDefault;
+            figure_properties.title_font_size = 18.0f;
+            figure_properties.title_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+
+            ImGui::ImPlot<float, float> Figure;
+            Figure.SetProperties(figure_properties);
+            Figure.SetScales(&scales_x, &scales_y);
+            Figure.DrawFigure();
+
+            // Areas 1-3
+            ImGui::ImAreaProperties area_properties;
+
+            ImGui::ImArea<float, float> Areas;
+
+            area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
+            Areas.SetProperties(area_properties);
+            Areas.DrawArea(Figure, x_data, y_data1, n_data, NULL, series[0]);
+
+            area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
+            Areas.SetProperties(area_properties);
+            Areas.DrawArea(Figure, x_data, y_data2, n_data, NULL, series[1]);
+
+            area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));
+            Areas.SetProperties(area_properties);
+            Areas.DrawArea(Figure, x_data, y_data3, n_data, NULL, series[2]);
+
+            // Axes
+            ImGui::ImAxisProperties axis_properties;
+            axis_properties.axis_title = "x-axis bottom";
+            axis_properties.axis_title_font = io.FontDefault;
+            axis_properties.axis_title_font_size = 18.0f;
+            axis_properties.axis_title_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            axis_properties.axis_thickness = 2.0f;
+            axis_properties.axis_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            axis_properties.axis_tick_font = io.FontDefault;
+            axis_properties.axis_tick_font_size = 12.0f;
+            axis_properties.axis_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+
+            ImGui::ImAxis<float, float> Axis;
+            axis_properties.axis_tick_format = "%s";
+            Axis.SetProperties(axis_properties);
+            Axis.DrawXAxis(Figure, "Bottom", x_data, labels, n_data);
+            axis_properties.axis_tick_format = "%2.1f";
+            Axis.SetProperties(axis_properties);
+            Axis.DrawYAxis(Figure, "Left", 0.0f, 6.0f, 1.0f);
+
+            // Legend
+            ImGui::ImLegendProperties legend_properties;
+            legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            legend_properties.stroke_width = 1.0f;
+            legend_properties.fill_col = 0;
+            legend_properties.series_font = io.FontDefault;
+            legend_properties.series_font_size = 18.0f;
+            legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+
+            const ImU32 series_color[] = {
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0)),
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1)),
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2))
+            };
+            ImGui::ImLegend<float, float> Legend;
+            Legend.SetProperties(legend_properties);
+            Legend.DrawLegend(Figure, "TR", series, series_color, 3);
+
+            ImGui::End();
+        }
+
+        // 5b. Area plot (stacked) demo
+        {
+            // Data
+            const float y_data1[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+            const float y_data2[] = {2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
+            const float y_data3[] = {6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
+            const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+            const char* series[] = {"series1", "series2", "series3"};
+            const size_t n_data = 7;
+            float y_data_bottoms[n_data] = {0.0f};
+
+            // Data scales
+            ImGui::ImLinearScales<float, float> scales_x;
+            ImGui::ImLinearScales<float, float> scales_y;
+            scales_x.SetDomain(0.0f, 6.0f);
+            scales_y.SetDomain(0.0f, 8.0f);
+
+            // Color scales
+            ImGui::ImLinearScales<float, ImVec4> scales_color;
+            scales_color.SetDomain(0.0f, 3.0f);
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
+
+            // ImGui::SetNextWindowPos(ImVec2(0,0));
+            // ImGui::SetNextWindowSize(io.DisplaySize);
+            bool show_plot_test = true;
+            ImGui::Begin("Area (stacked) plot", &show_plot_test);
+
+            // Figure
+            ImGui::ImPlotProperties figure_properties;
+            figure_properties.plot_size = ImVec2(500, 300);
+            figure_properties.margin_bottom = 50.0f;
+            figure_properties.margin_top = 50.0f;
+            figure_properties.margin_left = 50.0f;
+            figure_properties.margin_right = 100.0f;
+            figure_properties.title = "Area (stacked) Plot";
+            figure_properties.title_font = io.FontDefault;
+            figure_properties.title_font_size = 18.0f;
+            figure_properties.title_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+
+            ImGui::ImPlot<float, float> Figure;
+            Figure.SetProperties(figure_properties);
+            Figure.SetScales(&scales_x, &scales_y);
+            Figure.DrawFigure();
+
+            // Areas 1-3
+            ImGui::ImAreaProperties area_properties;
+
+            ImGui::ImArea<float, float> Areas;
+
+            area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
+            area_properties.area_hover_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(3));
+            Areas.SetProperties(area_properties);
+            Areas.DrawArea(Figure, x_data, y_data1, n_data, y_data_bottoms, series[0]);
+
+            area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
+            area_properties.area_hover_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(3));
+            Areas.SetProperties(area_properties);
+            Areas.DrawArea(Figure, x_data, y_data2, n_data, y_data_bottoms, series[1]);
+
+            area_properties.area_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));
+            area_properties.area_hover_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(3));
+            Areas.SetProperties(area_properties);
+            Areas.DrawArea(Figure, x_data, y_data3, n_data, y_data_bottoms, series[2]);
+
+            // Axes
+            ImGui::ImAxisProperties axis_properties;
+            axis_properties.axis_title = "x-axis bottom";
+            axis_properties.axis_title_font = io.FontDefault;
+            axis_properties.axis_title_font_size = 18.0f;
+            axis_properties.axis_title_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            axis_properties.axis_thickness = 2.0f;
+            axis_properties.axis_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            axis_properties.axis_tick_font = io.FontDefault;
+            axis_properties.axis_tick_font_size = 12.0f;
+            axis_properties.axis_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+
+            ImGui::ImAxis<float, float> Axis;
+            axis_properties.axis_tick_format = "%2.1f";
+            Axis.SetProperties(axis_properties);
+            Axis.DrawXAxis(Figure, "Bottom", 0.0f, 6.0f, 1.0f);
+            Axis.DrawYAxis(Figure, "Left", 0.0f, 8.0f, 1.0f);
+
+            // Legend
+            ImGui::ImLegendProperties legend_properties;
+            legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            legend_properties.series_font = io.FontDefault;
+            legend_properties.series_font_size = 18.0f;
+            legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+
+            const ImU32 series_color[] = {
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0)),
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1)),
+                ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2))
+            };
+            ImGui::ImLegend<float, float> Legend;
+            Legend.SetProperties(legend_properties);
+            Legend.DrawLegend(Figure, "TR", series, series_color, 3);
 
             ImGui::End();
         }

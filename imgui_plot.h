@@ -1053,6 +1053,74 @@ namespace ImGui
         ImAreaProperties properties_;
     };
 
+    // ## Heatmaps (for e.g., heatmap plot)
+    struct ImHeatmapProperties
+    {
+        //float cell_size = 2.0f; ///< width/height of each cell (Not used currently)
+        ImU32 cell_stroke_col = 0;  ///< heatmap stroke color
+        ImU32 cell_hovered_col = 0;  ///< heatmap hover color 
+        float cell_stroke_width = 1.0f;  ///< heatmap stroke width
+        float cell_spacing = 0.1f;  ///< as a percentage of cell size
+    };
+
+    template<typename Ta, typename Tb>
+    class ImHeatmap
+    {
+    public:
+        /**
+        * @brief Draw Heatmap
+        * 
+        * @param figure The figure to draw on
+        * @param x_data X axis indices
+        * @param y_data Y axis indices
+        * @param z_data Heat map colors
+        * @param n_data
+        *
+        */
+        void DrawHeatmap(ImPlot<Ta, Tb>& figure,
+            const Ta* x_data, const Ta* y_data, const Tb* z_data, const ImU32* z_colors, const int& n_data)
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImGuiContext& g = *GImGui;
+
+            // Check that the data provided is complete
+            int n_data_sq = sqrt(n_data);
+            assert(n_data_sq * n_data_sq == int(n_data));
+
+            const float cell_span_y = (figure.GetScalesY()->GetRangeMax() - figure.GetScalesY()->GetRangeMin())/(sqrt(n_data) - 1);
+            const float cell_span_x = (figure.GetScalesX()->GetRangeMax() - figure.GetScalesX()->GetRangeMin())/(sqrt(n_data) - 1);
+            for (int n = 0; n < n_data; ++n)
+            {
+                // draw the cells
+                const ImVec2 cell_BL = ImVec2(figure.GetScalesX()->Scale(x_data[n]) + cell_span_x * properties_.cell_spacing,
+                    figure.GetScalesY()->Scale(y_data[n]) + cell_span_y * properties_.cell_spacing);
+                const ImVec2 cell_TR = ImVec2(figure.GetScalesX()->Scale(x_data[n]) + cell_span_x - cell_span_x * properties_.cell_spacing,
+                    figure.GetScalesY()->Scale(y_data[n]) + cell_span_y - cell_span_y * properties_.cell_spacing);
+                window->DrawList->AddRectFilled(cell_BL, cell_TR, z_colors[n]);
+
+                // printf("BL: %f, %f; TR: %f, %f", cell_BL.x, cell_BL.y, cell_TR.x, cell_TR.y);
+                // system("pause");
+
+                // Tooltip on hover
+                if (cell_BL.x <= g.IO.MousePos.x &&
+                cell_TR.x >= g.IO.MousePos.x &&
+                cell_BL.y <= g.IO.MousePos.y &&
+                cell_TR.y >= g.IO.MousePos.y)
+                {
+                    SetTooltip("%s: %8.4g\n%s: %8.4g\n%s: %8.4g", "x", x_data[n], "y", y_data[n], "z", z_data[n]);
+                    window->DrawList->AddRectFilled(cell_BL, cell_TR, properties_.cell_hovered_col);
+                }
+            }
+        };
+
+        void SetProperties(ImHeatmapProperties& properties){properties_ = properties;}
+    private:
+        ImHeatmapProperties properties_;
+    };
+
     bool is_inside_area(const ImVec2& P, const ImVector<ImVec2>& V)
     {
         size_t cn = 0; // the crossing number counter

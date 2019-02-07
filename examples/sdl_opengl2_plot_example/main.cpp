@@ -184,7 +184,7 @@ int main(int, char**)
 
             // Axes
             ImGui::ImAxisProperties axis_properties;
-            axis_properties.axis_title = "x-axis bottom";
+            axis_properties.axis_title = "Axis";
             axis_properties.axis_title_font = io.FontDefault;
             axis_properties.axis_title_font_size = 18.0f;
             axis_properties.axis_title_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
@@ -917,6 +917,120 @@ int main(int, char**)
             ImGui::ImLegend<float, float> Legend;
             Legend.SetProperties(legend_properties);
             Legend.DrawLegend(Figure, "TR", series, series_color, 3);
+
+            ImGui::End();
+        }
+
+        // 6. Heatmap demo
+        {
+            // Data
+            const float y_data1[7] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+            const float x_data1[7] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};  
+            const float y_label_pos[] = {0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f}; 
+            const float x_label_pos[] = {0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f};             
+            const char* y_labels[] = {"1", "2", "3", "4", "5", "6"};
+            const char* x_labels[] = {"1", "2", "3", "4", "5", "6"};
+            const int n_ranges = 6;
+            const int n_data = 6*6;
+            float x_data[n_data];
+            float y_data[n_data];
+            float z_data[n_data];
+
+            // Data scales
+            ImGui::ImLinearScales<float, float> scales_x;
+            ImGui::ImLinearScales<float, float> scales_y;
+            scales_x.SetDomain(0.0f, 6.0f);
+            scales_y.SetDomain(0.0f, 6.0f);
+
+            // Color scales
+            ImGui::ImLinearScales<float, ImVec4> scales_color;  // Z axis
+            scales_color.SetDomain(0.0f, float(n_data));
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
+
+            ImU32 z_color[n_data];
+            for (int i=0; i<n_ranges; ++i)
+            {
+                for (int j=0; j<n_ranges; ++j)
+                {
+                    int iter = i*n_ranges + j;
+                    x_data[iter] = float(i);
+                    y_data[iter] = float(j);
+                    float value = (1 + x_data1[i]) * (1 + y_data1[i]);
+                    z_color[iter] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(value));
+                    // [BUG: conversion from ImVec4 to ImU32 looses color information resulting
+                    //       in only 3 colors (red, pink, and blue)]
+                }
+            }
+
+            // ImGui::SetNextWindowPos(ImVec2(0,0));
+            // ImGui::SetNextWindowSize(io.DisplaySize);
+            bool show_plot_test = true;
+            ImGui::Begin("Heatmap", &show_plot_test);
+
+            // Figure
+            ImGui::ImPlotProperties figure_properties;
+            figure_properties.plot_size = ImVec2(720, 720);
+            figure_properties.margin_bottom = 100.0f;
+            figure_properties.margin_top = 100.0f;
+            figure_properties.margin_left = 100.0f;
+            figure_properties.margin_right = 100.0f;
+            figure_properties.title = "Heatmap";
+            figure_properties.title_font = io.FontDefault;
+            figure_properties.title_font_size = 18.0f;
+            figure_properties.title_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+
+            ImGui::ImPlot<float, float> Figure;
+            Figure.SetProperties(figure_properties);
+            Figure.SetScales(&scales_x, &scales_y);
+            Figure.DrawFigure();
+
+            // heatmap
+            ImU32 hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
+            ImGui::ImHeatmapProperties heatmap_properties;
+            heatmap_properties.cell_hovered_col = hover_color;
+            heatmap_properties.cell_stroke_width = 1.0f;
+            heatmap_properties.cell_stroke_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
+            heatmap_properties.cell_spacing = 0.1f;
+            ImGui::ImHeatmap<float, float> Heatmap;
+
+            Heatmap.SetProperties(heatmap_properties);
+            Heatmap.DrawHeatmap(Figure, x_data, y_data, z_data, z_color, n_data);
+
+            // Color bar
+            // ImGui::ImLegendProperties legend_properties;
+            // legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            // legend_properties.stroke_width = 1.0f;
+            // legend_properties.fill_col = 0;
+            // legend_properties.series_font = io.FontDefault;
+            // legend_properties.series_font_size = 18.0f;
+            // legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+
+            // const ImU32 series_color[] = {
+            //     ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0)),
+            //     ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1)),
+            //     ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2))
+            // };
+            // ImGui::ImLegend<float, float> Legend;
+            // Legend.SetProperties(legend_properties);
+            // Legend.DrawLegend(Figure, "TR", series, series_color, 3);
+
+            // Axes
+            ImGui::ImAxisProperties axis_properties;
+            axis_properties.axis_title = "Title";
+            axis_properties.axis_title_font = io.FontDefault;
+            axis_properties.axis_title_font_size = 18.0f;
+            axis_properties.axis_title_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            axis_properties.axis_thickness = 2.0f;
+            axis_properties.axis_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            axis_properties.axis_tick_font = io.FontDefault;
+            axis_properties.axis_tick_font_size = 12.0f;
+            axis_properties.axis_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            axis_properties.axis_tick_format = "%s";
+
+            ImGui::ImAxis<float, float> Axis;
+            Axis.SetProperties(axis_properties);
+            Axis.DrawXAxis(Figure, "Bottom", x_label_pos, x_labels, n_ranges);
+            Axis.DrawYAxis(Figure, "Left", y_label_pos, y_labels, n_ranges);
 
             ImGui::End();
         }

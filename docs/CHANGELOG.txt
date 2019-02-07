@@ -35,7 +35,35 @@ HOW TO UPDATE?
 
 Breaking Changes:
 
+- Renamed io.ConfigResizeWindowsFromEdges to io.ConfigWindowsResizeFromEdges and removed its [Beta] mark.
+  The addition of new configuration options in the Docking branch is pushing for a little reorganization of those names.
+
 Other Changes:
+- Added BETA api for Tab Bar/Tabs widgets: (#261, #351)
+  - Added BeginTabBar(), EndTabBar(), BeginTabItem(), EndTabItem(), SetTabItemClosed() API.
+  - Added ImGuiTabBarFlags flags for BeginTabBar().
+  - Added ImGuiTabItemFlags flags for BeginTabItem().
+  - Style: Added ImGuiCol_Tab, ImGuiCol_TabHovered, ImGuiCol_TabActive, ImGuiCol_TabUnfocused, ImGuiCol_TabUnfocusedActive colors.
+  - Demo: Added Layout->Tabs demo code.
+  - Demo: Added "Documents" example app showcasing possible use for tabs.
+  This feature was merged from the Docking branch in order to allow the use of regular tabs in your code.
+  (It does not provide the docking/splitting/merging of windows available in the Docking branch)
+- Added ImGuiWindowFlags_UnsavedDocument window flag to append '*' to title without altering 
+  the ID, as a convenience to avoid using the ### operator.
+- Window, Focus, Popup: Fixed an issue where closing a popup by clicking another window with the _NoMove flag would refocus
+  the parent window of the popup instead of the newly clicked window.
+- Window: Contents size is preserved while a window collapsed. Fix auto-resizing window losing their size for one frame when uncollapsed.
+- Window: Contents size is preserved while a window contents is hidden (unless it is hidden for resizing purpose).
+- Window: Resizing windows from edge is now enabled by default (io.ConfigWindowsResizeFromEdges=true). Note that 
+  it only works _if_ the back-end sets ImGuiBackendFlags_HasMouseCursors, which the standard back-end do.
+- Window: Added io.ConfigWindowsMoveFromTitleBarOnly option. Still is ignored by window with no title bars (often popups).
+  This affects clamping window within the visible area: with this option enabled title bars need to be visible. (#899)
+- Window: Fixed using SetNextWindowPos() on a child window (which wasn't really documented) position the cursor as expected
+  in the parent window, so there is no mismatch between the layout in parent and the position of the child window. 
+- Style: Tweaked default value of style.DisplayWindowPadding from (20,20) to (19,19) so the default style as a value
+  which is the same as the title bar height.
+- Demo: "Simple Layout" and "Style Editor" are now using tabs.
+- Demo: Added a few more things under "Child windows" (changing ImGuiCol_ChildBg, positioning child, using IsItemHovered after a child).
 - Examples: DirectX10/11/12: Made imgui_impl_dx10/dx11/dx12.cpp link d3dcompiler.lib from the .cpp file
   to ease integration.
 

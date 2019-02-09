@@ -491,7 +491,7 @@ namespace ImGui
     // ## Plot legends and other features
     struct ImColorBarProperties
     {        
-        const char* cbar_tick_format = "%s"; ///< string format
+        const char* cbar_font_format = "%s"; ///< string format
         ImFont* cbar_font = NULL; ///< Font type for color bar labels
         float cbar_font_size = 0.0f; ///< Font size of the color bar labels
         ImU32 cbar_font_col = 0; ///< Color of the color bar labels
@@ -527,7 +527,9 @@ namespace ImGui
             ImVec2 series_size = ImVec2(0.0f, 0.0f);
             for (int n=0; n<n_series; ++n)
             {
-                ImVec2 series_size_tmp = CalcTextSize(series[n], NULL, true);
+                char series_text[512];
+                sprintf(series_text, properties_.cbar_font_format, series[n]);
+                ImVec2 series_size_tmp = CalcTextSize(series_text, NULL, true);
                 if (series_size_tmp.x > series_size.x) series_size = series_size_tmp;
             }
 
@@ -538,25 +540,44 @@ namespace ImGui
             const float width = cell_size;
 
             if (!strcmp(orientation, "Vertical")){
+                for (int n=0; n<n_series; ++n)
+                {
+                    const float start_y_pos = n*width;
+
+                    // Draw box and color for each series
+                    window->DrawList->AddRectFilled(
+                        ImVec2(legend_pos.x, legend_pos.y + start_y_pos),
+                        ImVec2(legend_pos.x + width, legend_pos.y + start_y_pos + width),
+                        series_color[n]);
+
+                    // Label colored box with series name
+                    char series_text[512];
+                    sprintf(series_text, properties_.cbar_font_format, series[n]);
+                    window->DrawList->AddText(properties_.cbar_font, properties_.cbar_font_size,
+                        ImVec2(legend_pos.x + width + text_spacing, legend_pos.y + start_y_pos + text_spacing),
+                        properties_.cbar_font_col, series_text);
+
+                }   
             } else if (!strcmp(orientation, "Horizontal")){
-            }
+                for (int n=0; n<n_series; ++n)
+                {
+                    const float start_x_pos = n*width;
 
-            for (int n=0; n<n_series; ++n)
-            {
-                const float start_y_pos = n*series_size.y + n*series_spacing + series_spacing;
+                    // Draw box and color for each series
+                    window->DrawList->AddRectFilled(
+                        ImVec2(legend_pos.x + start_x_pos, legend_pos.y),
+                        ImVec2(legend_pos.x + width + start_x_pos, legend_pos.y + width),
+                        series_color[n]);
 
-                // Draw box and color for each series
-                window->DrawList->AddRectFilled(
-                    ImVec2(legend_pos.x, legend_pos.y + start_y_pos),
-                    ImVec2(legend_pos.x + width, legend_pos.y + start_y_pos + width),
-                    series_color[n]);
+                    // Label colored box with series name
+                    char series_text[512];
+                    sprintf(series_text, properties_.cbar_font_format, series[n]);
+                    window->DrawList->AddText(properties_.cbar_font, properties_.cbar_font_size,
+                        ImVec2(legend_pos.x + start_x_pos + text_spacing, legend_pos.y + width + text_spacing),
+                        properties_.cbar_font_col, series_text);
 
-                // Label colored box with series name
-                window->DrawList->AddText(properties_.series_font, properties_.series_font_size,
-                    ImVec2(legend_pos.x - text_spacing, legend_pos.y + start_y_pos + text_spacing),
-                    properties_.series_font_col, series[n]);
-
-            }            
+                }   
+            }         
         }
 
         void SetProperties(ImColorBarProperties& properties){properties_ = properties;}

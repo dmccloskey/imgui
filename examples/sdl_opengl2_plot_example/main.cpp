@@ -924,13 +924,13 @@ int main(int, char**)
         // 6. Heatmap demo
         {
             // Data
-            const float y_data1[7] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
-            const float x_data1[7] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};  
+            const int n_ranges = 6;
+            const float y_data1[n_ranges + 1] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+            const float x_data1[n_ranges + 1] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};  
             const float y_label_pos[] = {0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f}; 
             const float x_label_pos[] = {0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f};             
             const char* y_labels[] = {"1", "2", "3", "4", "5", "6"};
             const char* x_labels[] = {"1", "2", "3", "4", "5", "6"};
-            const int n_ranges = 6;
             const int n_data = 6*6;
             float x_data[n_data];
             float y_data[n_data];
@@ -948,10 +948,16 @@ int main(int, char**)
             scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
 
             ImU32 z_color[n_data];
-            ImU32 color_range[n_ranges];
+            float cbar_labels[n_ranges + 1]; cbar_labels[0] = 0.0f;
+            ImU32 cbar_colors[n_ranges + 1]; cbar_colors[0] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0.0f));
             for (int i=0; i<n_ranges; ++i)
             {
-                color_range[i] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(i)));
+                // make the labels and color range for the cbar
+                float i_value = (i + 1) * n_ranges;
+                cbar_labels[i + 1] = i_value;
+                cbar_colors[i + 1] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(i_value));
+
+                // make the data and colors for the heatmap
                 for (int j=0; j<n_ranges; ++j)
                 {
                     int iter = i*n_ranges + j;
@@ -1000,13 +1006,15 @@ int main(int, char**)
 
             // Color bar
             ImGui::ImColorBarProperties cbar_properties;
+            cbar_properties.cbar_font_format = "%1.0f";
             cbar_properties.cbar_font = io.FontDefault;
             cbar_properties.cbar_font_size = 18.0f;
             cbar_properties.cbar_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
 
             ImGui::ImColorBar<float, float> ColorBar;
             ColorBar.SetProperties(cbar_properties);
-            ColorBar.DrawColorBar(Figure, "TR", "Vertical", x_data1, color_range, n_ranges);
+            // ColorBar.DrawColorBar(Figure, "TR", "Vertical", cbar_labels, cbar_colors, n_ranges + 1);
+            ColorBar.DrawColorBar(Figure, "BL", "Horizontal", cbar_labels, cbar_colors, n_ranges + 1);
 
             // Axes
             ImGui::ImAxisProperties axis_properties;

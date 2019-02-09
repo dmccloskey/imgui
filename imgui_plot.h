@@ -490,8 +490,79 @@ namespace ImGui
 
     // ## Plot legends and other features
     struct ImColorBarProperties
+    {        
+        const char* cbar_tick_format = "%s"; ///< string format
+        ImFont* cbar_font = NULL; ///< Font type for color bar labels
+        float cbar_font_size = 0.0f; ///< Font size of the color bar labels
+        ImU32 cbar_font_col = 0; ///< Color of the color bar labels
+    };
+
+    template<typename Ta, typename Tb>
+    class ImColorBar
     {
-        // TODO
+    public:
+
+        /**@brief Draw a color bar
+         *
+         * @param figure The figure to draw on
+         * @param pos Pos of the color bar (TL, TR, BL, BR)
+         * @param orientation Orientation of the color bar (Vertical, Horizontal)
+         * @param series List of series labels
+         * @param series_color List of series colors
+         */
+        void DrawColorBar(ImPlot<Ta, Tb>& figure, const char* pos, const char* orientation,
+            const Tb* series, const ImU32 series_color[], const int& n_series)
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImVec2 legend_pos = ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->GetRangeMax()); //TR
+            if (!strcmp(pos, "TL")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->GetRangeMin());
+            else if (!strcmp(pos, "TR")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->GetRangeMax());
+            else if (!strcmp(pos, "BR")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->GetRangeMax());
+            else if (!strcmp(pos, "BL")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->GetRangeMin());
+
+            // Deduce the maximum text size
+            ImVec2 series_size = ImVec2(0.0f, 0.0f);
+            for (int n=0; n<n_series; ++n)
+            {
+                ImVec2 series_size_tmp = CalcTextSize(series[n], NULL, true);
+                if (series_size_tmp.x > series_size.x) series_size = series_size_tmp;
+            }
+
+            // Legend attributes
+            const float text_spacing = 0.1 * series_size.y;
+            const float cell_size = 1.1 * series_size.y;
+            const float height = n_series * cell_size;
+            const float width = cell_size;
+
+            if (!strcmp(orientation, "Vertical")){
+            } else if (!strcmp(orientation, "Horizontal")){
+            }
+
+            for (int n=0; n<n_series; ++n)
+            {
+                const float start_y_pos = n*series_size.y + n*series_spacing + series_spacing;
+
+                // Draw box and color for each series
+                window->DrawList->AddRectFilled(
+                    ImVec2(legend_pos.x, legend_pos.y + start_y_pos),
+                    ImVec2(legend_pos.x + width, legend_pos.y + start_y_pos + width),
+                    series_color[n]);
+
+                // Label colored box with series name
+                window->DrawList->AddText(properties_.series_font, properties_.series_font_size,
+                    ImVec2(legend_pos.x - text_spacing, legend_pos.y + start_y_pos + text_spacing),
+                    properties_.series_font_col, series[n]);
+
+            }            
+        }
+
+        void SetProperties(ImColorBarProperties& properties){properties_ = properties;}
+
+    private:
+        ImColorBarProperties properties_;
     };
 
     struct ImLegendProperties
@@ -531,7 +602,6 @@ namespace ImGui
             else if (!strcmp(pos, "TR")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->GetRangeMax());
             else if (!strcmp(pos, "BR")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->GetRangeMax());
             else if (!strcmp(pos, "BL")) legend_pos = ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->GetRangeMin());
-
 
             // Deduce the maximum text size
             ImVec2 series_size = ImVec2(0.0f, 0.0f);

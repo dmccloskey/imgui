@@ -948,8 +948,10 @@ int main(int, char**)
             scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
 
             ImU32 z_color[n_data];
+            ImU32 color_range[n_ranges];
             for (int i=0; i<n_ranges; ++i)
             {
+                color_range[i] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(i)));
                 for (int j=0; j<n_ranges; ++j)
                 {
                     int iter = i*n_ranges + j;
@@ -997,22 +999,14 @@ int main(int, char**)
             Heatmap.DrawHeatmap(Figure, x_data, y_data, z_data, z_color, n_data);
 
             // Color bar
-            // ImGui::ImLegendProperties legend_properties;
-            // legend_properties.stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
-            // legend_properties.stroke_width = 1.0f;
-            // legend_properties.fill_col = 0;
-            // legend_properties.series_font = io.FontDefault;
-            // legend_properties.series_font_size = 18.0f;
-            // legend_properties.series_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            ImGui::ImColorBarProperties cbar_properties;
+            cbar_properties.cbar_font = io.FontDefault;
+            cbar_properties.cbar_font_size = 18.0f;
+            cbar_properties.cbar_font_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
 
-            // const ImU32 series_color[] = {
-            //     ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0)),
-            //     ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1)),
-            //     ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2))
-            // };
-            // ImGui::ImLegend<float, float> Legend;
-            // Legend.SetProperties(legend_properties);
-            // Legend.DrawLegend(Figure, "TR", series, series_color, 3);
+            ImGui::ImColorBar<float, float> ColorBar;
+            ColorBar.SetProperties(cbar_properties);
+            ColorBar.DrawColorBar(Figure, "TR", "Vertical", x_data1, color_range, n_ranges);
 
             // Axes
             ImGui::ImAxisProperties axis_properties;

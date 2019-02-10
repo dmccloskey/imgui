@@ -1211,6 +1211,108 @@ namespace ImGui
     private:
         ImHeatmapProperties properties_;
     };
+    struct ImBoxPlotProperties
+    {
+        float box_width = 10.0f;
+        ImU32 box_fill_col = 0;
+        ImU32 box_hover_col = 0;
+        ImU32 box_stroke_col = 0;
+        float box_stroke_width = 0;
+        ImU32 median_stroke_col = 0;
+        float median_stroke_width = 0;
+        ImU32 whiskers_stroke_col = 0;
+        float whiskers_stroke_width = 0;
+        ImU32 caps_stroke_col = 0;
+        float caps_stroke_width = 0;		
+    };
+
+    template<typename Ta, typename Tb>
+    class ImBoxPlot
+    {
+    public:
+        void DrawBoxPlot(
+            ImPlot<Ta, Tb>& figure,
+            const Tb* y_data_min,
+            const Tb* y_data_max,
+            const Tb* y_data_ci_l,
+            const Tb* y_data_ci_u,
+            const Tb* y_data_median,
+            const size_t n_data,
+			const char* series[]
+        )
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImGuiContext& g = *GImGui;
+
+            const float box_span = (figure.GetScalesX()->GetRangeMax() - figure.GetScalesX()->GetRangeMin())/(n_data - 1);
+            for (int n = 0; n < n_data; ++n)
+            {
+                // Box
+                const ImVec2 bar_BL = ImVec2(figure.GetScalesX()->GetRangeMin() + n*box_span,
+                    figure.GetScalesY()->Scale(y_data_ci_l[n]));
+                const ImVec2 bar_TR = ImVec2(figure.GetScalesX()->GetRangeMin() + n*bar_span + properties_.box_width,
+                    figure.GetScalesY()->Scale(y_data_ci_u[n]));
+                window->DrawList->AddRectFilled(bar_BL, bar_TR, properties_.box_fill_col);
+
+                // Tooltip on hover
+                if (bar_BL.x <= g.IO.MousePos.x &&
+                bar_TR.x >= g.IO.MousePos.x &&
+                bar_BL.y >= g.IO.MousePos.y &&
+                bar_TR.y <= g.IO.MousePos.y)
+                {
+                    SetTooltip("%s\n%s: %8.4g", series, "y", y_data[n]);
+                    window->DrawList->AddRectFilled(bar_BL, bar_TR, properties_.bar_hovered_col);
+                }
+
+                // Median line
+                const ImVec2 median_start = ImVec2(figure.GetScalesX()->GetRangeMin() + n*box_span,
+                    figure.GetScalesY()->Scale(y_data_median[n]));
+                const ImVec2 median_end = ImVec2(figure.GetScalesX()->GetRangeMin() + n*box_span + properties_.box_width,
+                    figure.GetScalesY()->Scale(y_data_median[n]));
+                window->DrawList->AddLine(median_start, median_end, properties_.median_stroke_col, properties_.median_stroke_width);
+
+                // Top Whisker
+                const Ta middle = (median_start.x + median_end.x)/2;
+                const ImVec2 whisk_top_start = ImVec2(middle,
+                    figure.GetScalesY()->Scale(y_data_ci_u[n]));
+                const ImVec2 whisk_top_end = ImVec2(middle,
+                    figure.GetScalesY()->Scale(y_data_max[n]));
+                window->DrawList->AddLine(whisk_top_start, whisk_top_end, properties_.whisker_stroke_col, properties_.whisker_stroke_width);
+
+                // Top Cap
+                const ImVec2 cap_top_start = ImVec2(figure.GetScalesX()->GetRangeMin() + n*box_span,
+                    figure.GetScalesY()->Scale(y_data_max[n]));
+                const ImVec2 cap_top_end = ImVec2(figure.GetScalesX()->GetRangeMin() + n*box_span + properties_.box_width,
+                    figure.GetScalesY()->Scale(y_data_max[n]));
+                window->DrawList->AddLine(cap_top_start, cap_top_end, properties_.cap_stroke_col, properties_.cap_stroke_width);
+
+                // Bottom Whisker
+                const ImVec2 whisk_bottom_start = ImVec2(middle,
+                    figure.GetScalesY()->Scale(y_data_ci_l[n]));
+                const ImVec2 whisk_bottom_end = ImVec2(middle,
+                    figure.GetScalesY()->Scale(y_data_min[n]));
+                window->DrawList->AddLine(whisk_bottom_start, whisk_bottom_end, properties_.whisker_stroke_col, properties_.whisker_stroke_width);
+
+                // Bottom Cap
+                const ImVec2 cap_bottom_start = ImVec2(figure.GetScalesX()->GetRangeMin() + n*box_span,
+                    figure.GetScalesY()->Scale(y_data_min[n]));
+                const ImVec2 cap_bottom_end = ImVec2(figure.GetScalesX()->GetRangeMin() + n*box_span + properties_.box_width,
+                    figure.GetScalesY()->Scale(y_data_min[n]));
+                window->DrawList->AddLine(cap_bottom_start, cap_botom_end, properties_.cap_stroke_col, properties_.cap_stroke_width);
+            }
+        };
+
+        void SetProperties(ImBoxPlotProperties& properties)
+        {
+            properties_ = properties;
+        }
+
+    private:
+        ImBoxPlotProperties properties_;
+    };
 
     bool is_inside_area(const ImVec2& P, const ImVector<ImVec2>& V)
     {

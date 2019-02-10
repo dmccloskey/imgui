@@ -1040,36 +1040,37 @@ int main(int, char**)
         // 8. BoxPlot demo
         {
             // Data
-            const float y_data1[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
-            const float y_data2[] = {2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
-            const float y_data3[] = {6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
+            const float y_data_min[] = {0.0f, 1.0f, 2.0f, 0.0f, 1.0f, 2.0f, 0.0f};
+            const float y_data_max[] = {10.0f, 9.0f, 8.0f, 10.0f, 9.0f, 8.0f, 10.0f};
+            const float y_data_ci_lb[] = {3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f};
+            const float y_data_ci_ub[] = {7.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f};
+            const float y_data_median[] = {5.0f, 4.0f, 6.0f, 5.0f, 4.0f, 6.0f, 5.0f};
             const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
 
             const char* labels[] = {"1", "2", "3", "4", "5", "6", "7"};
-            const char* series[] = {"series1", "series2", "series3"};
             const int n_data = 7;
 
-            float y_data1_bottoms[7], y_data2_bottoms[7], y_data3_bottoms[7];
-            float y_max = 0;
+            // Color scales
+            ImGui::ImLinearScales<float, ImVec4> scales_color;
+            scales_color.SetDomain(0.0f, 6.0f);
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
+
+            float y_max = 0, y_min = 0;
+            ImU32 series_fill_col[n_data];
             for (int n=0; n<n_data; ++n)
             {
-                y_data1_bottoms[n] = 0.0f;
-                y_data2_bottoms[n] = y_data1[n];
-                y_data3_bottoms[n] = y_data1[n] + y_data2[n];
-                const float y_sum = y_data1[n] + y_data2[n] + y_data3[n];
-                if (y_sum > y_max) y_max = y_sum;
+                if (y_data_max[n] > y_max) y_max = y_data_max[n];
+                if (y_data_min[n] < y_min) y_min = y_data_min[n];
+                series_fill_col[n] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(n)));
+                // [BUG: conversion from ImVec4 to ImU32 looses color information resulting
+                //       in only 3 colors (red, pink, and blue)]
             }
 
             // Data scales
             ImGui::ImLinearScales<float, float> scales_x;
             ImGui::ImLinearScales<float, float> scales_y;
             scales_x.SetDomain(0.0f, 6.0f);
-            scales_y.SetDomain(0.0f, y_max);
-
-            // Color scales
-            ImGui::ImLinearScales<float, ImVec4> scales_color;
-            scales_color.SetDomain(0.0f, 2.0f);
-            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
+            scales_y.SetDomain(y_min, y_max);
 
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
@@ -1093,28 +1094,24 @@ int main(int, char**)
             Figure.SetScales(&scales_x, &scales_y);
             Figure.DrawFigure();
 
-            // Bars 1-3
-            ImGui::ImBarProperties bar_properties;
-            bar_properties.bar_width = 20.0f;
-            bar_properties.bar_stroke_col = 0;
-            bar_properties.bar_stroke_width = 1.0f;
+            // BoxPlot
+            ImGui::ImBoxPlotProperties box_properties;
+            box_properties.box_width = 20.0f;
+            box_properties.box_stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            box_properties.box_stroke_width = 1.0f;
+            box_properties.box_hovered_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
+            box_properties.median_stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            box_properties.median_stroke_width = 1.0f;
+            box_properties.whiskers_stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            box_properties.whiskers_stroke_width = 1.0f;
+            box_properties.caps_stroke_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f));
+            box_properties.caps_stroke_width = 1.0f;
 
-            ImGui::ImBars<float, float> Bars;
+            ImGui::ImBoxPlot<float, float> BoxPlot;
 
-            bar_properties.bar_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
-            bar_properties.bar_hovered_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
-            Bars.SetProperties(bar_properties);
-            Bars.DrawBars(Figure, y_data1, n_data, 0.0f, y_data1_bottoms, series[0]);
-
-            bar_properties.bar_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
-            bar_properties.bar_hovered_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
-            Bars.SetProperties(bar_properties);
-            Bars.DrawBars(Figure, y_data2, n_data, 0.0f, y_data2_bottoms, series[1]);
-
-            bar_properties.bar_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));
-            bar_properties.bar_hovered_col = ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 0.0f, 0.0f, 255.0f));
-            Bars.SetProperties(bar_properties);
-            Bars.DrawBars(Figure, y_data3, n_data, 0.0f, y_data3_bottoms, series[2]);
+            BoxPlot.SetProperties(box_properties);
+            BoxPlot.DrawBoxPlot(Figure, y_data_min, y_data_max, y_data_ci_lb, y_data_ci_ub, y_data_median,
+                n_data, series_fill_col, labels);
 
             // Axes
             ImGui::ImAxisProperties axis_properties;
@@ -1134,7 +1131,7 @@ int main(int, char**)
             Axis.DrawXAxis(Figure, "Bottom", x_data, labels, n_data);
             axis_properties.axis_tick_format = "%4.2f";
             Axis.SetProperties(axis_properties);
-            Axis.DrawYAxis(Figure, "Left", 0.0f, y_max, 1.0f);
+            Axis.DrawYAxis(Figure, "Left", y_min, y_max, 1.0f);
 
             // Legend
             ImGui::ImLegendProperties legend_properties;
@@ -1152,7 +1149,7 @@ int main(int, char**)
             };
             ImGui::ImLegend<float, float> Legend;
             Legend.SetProperties(legend_properties);
-            Legend.DrawLegend(Figure, "TR", series, series_color, 3);
+            Legend.DrawLegend(Figure, "TR", labels, series_fill_col, n_data);
 
             ImGui::End();
         }

@@ -1040,30 +1040,39 @@ int main(int, char**)
         // 8. BoxPlot demo
         {
             // Data
-            const float y_data_min[] = {0.0f, 1.0f, 2.0f, 0.0f, 1.0f, 2.0f, 0.0f};
-            const float y_data_max[] = {10.0f, 9.0f, 8.0f, 10.0f, 9.0f, 8.0f, 10.0f};
-            const float y_data_ci_lb[] = {3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f};
-            const float y_data_ci_ub[] = {7.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f};
-            const float y_data_median[] = {5.0f, 4.0f, 6.0f, 5.0f, 4.0f, 6.0f, 5.0f};
+            const float y1_data_min[] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+            const float y1_data_max[] = {10.0f, 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, 10.0f};
+            const float y1_data_ci_lb[] = {3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f};
+            const float y1_data_ci_ub[] = {7.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f};
+            const float y1_data_median[] = {5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f};
+
+            const float y2_data_min[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+            const float y2_data_max[] = {9.0f, 9.0f, 9.0f, 9.0f, 9.0f, 9.0f, 9.0f};
+            const float y2_data_ci_lb[] = {3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f};
+            const float y2_data_ci_ub[] = {7.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f};
+            const float y2_data_median[] = {4.0f, 4.0f, 4.0f, 4.0f, 4.0f, 4.0f, 4.0f};
+            
+            const float y3_data_min[] = {2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
+            const float y3_data_max[] = {8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f};
+            const float y3_data_ci_lb[] = {3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f};
+            const float y3_data_ci_ub[] = {7.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f, 7.0f};
+            const float y3_data_median[] = {5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f};
+
             const float x_data[] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
 
             const char* labels[] = {"1", "2", "3", "4", "5", "6", "7"};
+            const char* series[] = {"series1", "series2", "series3"};
             const int n_data = 7;
 
-            // Color scales
-            ImGui::ImLinearScales<float, ImVec4> scales_color;
-            scales_color.SetDomain(0.0f, 6.0f);
-            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
-
             float y_max = 0, y_min = 0;
-            ImU32 series_fill_col[n_data];
             for (int n=0; n<n_data; ++n)
             {
-                if (y_data_max[n] > y_max) y_max = y_data_max[n];
-                if (y_data_min[n] < y_min) y_min = y_data_min[n];
-                series_fill_col[n] = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(float(n)));
-                // [BUG: conversion from ImVec4 to ImU32 looses color information resulting
-                //       in only 3 colors (red, pink, and blue)]
+                if (y1_data_max[n] > y_max) y_max = y1_data_max[n];
+                if (y2_data_max[n] > y_max) y_max = y2_data_max[n];
+                if (y3_data_max[n] > y_max) y_max = y3_data_max[n];
+                if (y1_data_min[n] < y_min) y_min = y1_data_min[n];
+                if (y2_data_min[n] < y_min) y_min = y2_data_min[n];
+                if (y3_data_min[n] < y_min) y_min = y3_data_min[n];
             }
 
             // Data scales
@@ -1071,6 +1080,11 @@ int main(int, char**)
             ImGui::ImLinearScales<float, float> scales_y;
             scales_x.SetDomain(0.0f, 6.0f);
             scales_y.SetDomain(y_min, y_max);
+
+            // Color scales
+            ImGui::ImLinearScales<float, ImVec4> scales_color;
+            scales_color.SetDomain(0.0f, 2.0f);
+            scales_color.SetRange(ImVec4(255.0f, 0.0f, 0.0f, 255.0f), ImVec4(0.0f, 0.0f, 255.0f, 255.0f));
 
             // ImGui::SetNextWindowPos(ImVec2(0,0));
             // ImGui::SetNextWindowSize(io.DisplaySize);
@@ -1109,9 +1123,21 @@ int main(int, char**)
 
             ImGui::ImBoxPlot<float, float> BoxPlot;
 
+            // BoxPlot Series 1-3
+            box_properties.box_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(0));
             BoxPlot.SetProperties(box_properties);
-            BoxPlot.DrawBoxPlot(Figure, y_data_min, y_data_max, y_data_ci_lb, y_data_ci_ub, y_data_median,
-                n_data, series_fill_col, labels);
+            BoxPlot.DrawBoxPlot(Figure, y1_data_min, y1_data_max, y1_data_ci_lb, y1_data_ci_ub, y1_data_median,
+                n_data, 0*box_properties.box_width, series[0]);
+
+            box_properties.box_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(1));
+            BoxPlot.SetProperties(box_properties);
+            BoxPlot.DrawBoxPlot(Figure, y2_data_min, y2_data_max, y2_data_ci_lb, y2_data_ci_ub, y2_data_median,
+                n_data, 1*box_properties.box_width, series[1]);
+
+            box_properties.box_fill_col = ImGui::ColorConvertFloat4ToU32(scales_color.Scale(2));
+            BoxPlot.SetProperties(box_properties);
+            BoxPlot.DrawBoxPlot(Figure, y3_data_min, y3_data_max, y3_data_ci_lb, y3_data_ci_ub, y3_data_median,
+                n_data, 2*box_properties.box_width, series[2]);
 
             // Axes
             ImGui::ImAxisProperties axis_properties;
@@ -1149,7 +1175,7 @@ int main(int, char**)
             };
             ImGui::ImLegend<float, float> Legend;
             Legend.SetProperties(legend_properties);
-            Legend.DrawLegend(Figure, "TR", labels, series_fill_col, n_data);
+            Legend.DrawLegend(Figure, "TR", series, series_color, 3);
 
             ImGui::End();
         }

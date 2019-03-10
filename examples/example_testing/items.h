@@ -26,6 +26,10 @@ namespace example
   static void ShowAppWindow();
   static void ShowAppMainMenuBar();
   static void ShowMenuFile();
+  static void ShowMenuEdit();
+  static void ShowMenuView();
+  static void ShowMenuAction();
+  static void ShowMenuHelp();
   static void SequenceProgressWidget(bool* p_open);
   static void TableWidget(bool* p_open);
   static void TableFilterPopup(const char* popuop_id, ImGuiTextFilter&, std::vector<std::string>& column, bool* checked);
@@ -51,15 +55,15 @@ namespace example
     static bool show_app_about = false;
     if (show_app_about)
     {
-      ImGui::Begin("About SmartPeak", &show_app_about, ImGuiWindowFlags_AlwaysAutoResize);
-      ImGui::Text("SmartPeak %s", ImGui::GetVersion()); //TODO: define version function
-      ImGui::Separator();
-      ImGui::Text("By Douglas McCloskey and contributors.");
-      ImGui::Text("SmartPeak is licensed under the MIT License, see LICENSE for more information.");
-      ImGui::End();
+        ImGui::Begin("About SmartPeak", &show_app_about, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("SmartPeak %s", ImGui::GetVersion()); //TODO: define version function
+        ImGui::Separator();
+        ImGui::Text("By Douglas McCloskey and contributors.");
+        ImGui::Text("SmartPeak is licensed under the MIT License, see LICENSE for more information.");
+        ImGui::End();
     }
 
-    static bool show_sequence_progress = true;
+    static bool show_sequence_progress = false;
     if (show_sequence_progress) SequenceProgressWidget(&show_sequence_progress);
 
     static bool show_generic_table = true;
@@ -83,32 +87,22 @@ namespace example
       }
       if (ImGui::BeginMenu("Edit"))
       {
-        if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-        if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-        ImGui::Separator();
-        if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-        if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-        if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+        ShowMenuEdit();
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("View"))
       {
-        ImGui::MenuItem("Sequence progress", NULL, &show_sequence_progress);
+        ShowMenuView();
         ImGui::EndMenu();
       }
-      if (ImGui::BeginMenu("Settings"))
+      if (ImGui::BeginMenu("Actions"))
       {
-        //TODO
-        ImGui::EndMenu();
-      }
-      if (ImGui::BeginMenu("Tools"))
-      {
-        //TODO
+        ShowMenuAction();
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Help"))
       {
-        ImGui::MenuItem("About", NULL, &show_app_about);
+        ShowMenuHelp();
         ImGui::EndMenu();
       }
       ImGui::EndMainMenuBar();
@@ -157,6 +151,95 @@ namespace example
       ImGui::EndMenu();
     }
     if (ImGui::MenuItem("Quit", "Alt+F4")) {}
+  }
+
+  static void ShowMenuEdit()
+  {
+    ImGui::MenuItem("Main menu", NULL, false, false);
+    if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+    if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+    ImGui::Separator();
+    if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+    if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+    if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+    ImGui::Separator();
+    if (ImGui::MenuItem("Sequence")) {}
+    if (ImGui::MenuItem("Transitions")) {}
+    if (ImGui::MenuItem("Quant Method")) {}
+    if (ImGui::MenuItem("Standards Conc")) {}
+    if (ImGui::MenuItem("Comp Filters")) {}
+    if (ImGui::MenuItem("Comp Group Filters")) {}
+    if (ImGui::MenuItem("Comp QCs")) {}
+    if (ImGui::MenuItem("Comp Group QCs")) {}
+    if (ImGui::MenuItem("Parameters")) {}
+    ImGui::Separator();
+    if (ImGui::MenuItem("Workflow")) {}
+  }
+
+  static void ShowMenuView()
+  {
+    ImGui::MenuItem("Main menu", NULL, false, false);
+    ImGui::MenuItem("Sequence", NULL, &show_sequence_progress);
+    if (ImGui::MenuItem("Sequence segments")) {}
+    if (ImGui::MenuItem("Sample groups")) {}
+    if (ImGui::MenuItem("Workflow wizard")) {}
+    if (ImGui::MenuItem("Review plots"))
+    {
+        if (ImGui::MenuItem("Feature plot")) {}
+        if (ImGui::MenuItem("Metric plot")) {}
+        ImGui::EndMenu();
+    }
+    if (ImGui::MenuItem("Reports"))
+    {
+        if (ImGui::MenuItem("Feature summary")) {}
+        if (ImGui::MenuItem("Sequence summary")) {}
+        ImGui::EndMenu();
+    }
+    if (ImGui::MenuItem("Log")) {}
+  }
+
+  static void ShowMenuAction()
+  {
+    ImGui::MenuItem("Main menu", NULL, false, false);
+    if (ImGui::MenuItem("Run command")) {}
+    if (ImGui::MenuItem("Run workflow")) {}
+    if (ImGui::MenuItem("Sample groups")) {}
+    if (ImGui::MenuItem("Workflow wizard")) {}
+    if (ImGui::MenuItem("Quick info"))
+    {
+    if (ImGui::MenuItem("Sequence")) {}
+    if (ImGui::MenuItem("Transitions")) {}
+    if (ImGui::MenuItem("Quant Method")) {}
+    if (ImGui::MenuItem("Standards Conc")) {}
+    if (ImGui::MenuItem("Comp Filters")) {}
+    if (ImGui::MenuItem("Comp Group Filters")) {}
+    if (ImGui::MenuItem("Comp QCs")) {}
+    if (ImGui::MenuItem("Comp Group QCs")) {}
+    if (ImGui::MenuItem("Parameters")) {}
+    ImGui::EndMenu();
+    }
+    if (ImGui::MenuItem("Integrity checks"))
+    {
+    if (ImGui::MenuItem("Sample consistency")) {}
+    if (ImGui::MenuItem("Comp consistency")) {}
+    if (ImGui::MenuItem("Comp Group consistency")) {}
+    if (ImGui::MenuItem("IS consistency")) {}
+    ImGui::EndMenu();
+    }
+    if (ImGui::MenuItem("Report"))
+    {
+    if (ImGui::MenuItem("Feature summary")) {}
+    if (ImGui::MenuItem("Sequence summary")) {}
+    ImGui::EndMenu();
+    }
+  }
+
+  static void ShowMenuHelp()
+  {
+    ImGui::MenuItem("Main menu", NULL, false, false);
+    ImGui::MenuItem("About", NULL, &show_app_about);
+    if (ImGui::MenuItem("Documentation")) {}
+    if (ImGui::MenuItem("Version")) {}
   }
 
   /**

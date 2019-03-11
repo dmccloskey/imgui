@@ -24,12 +24,12 @@ namespace example
 
   // main widgets and widget elements
   static void ShowAppWindow();
-  static void ShowAppMainMenuBar();
+  static void ShowMainMenuBar();
   static void ShowMenuFile();
   static void ShowMenuEdit();
-  static void ShowMenuView();
+  static void ShowMenuView(bool& show_sequence_progress);
   static void ShowMenuAction();
-  static void ShowMenuHelp();
+  static void ShowMenuHelp(bool& show_app_about);
   static void SequenceProgressWidget(bool* p_open);
   static void TableWidget(bool* p_open);
   static void TableFilterPopup(const char* popuop_id, ImGuiTextFilter&, std::vector<std::string>& column, bool* checked);
@@ -46,11 +46,11 @@ namespace example
 
   static void ShowAppWindow()
   {
-    ShowAppMainMenuBar();
+    ShowMainMenuBar();
   }
 
   // Demonstrate creating a fullscreen menu bar and populating it.
-  static void ShowAppMainMenuBar()
+  static void ShowMainMenuBar()
   {
     static bool show_app_about = false;
     if (show_app_about)
@@ -92,7 +92,7 @@ namespace example
       }
       if (ImGui::BeginMenu("View"))
       {
-        ShowMenuView();
+        ShowMenuView(show_sequence_progress);
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Actions"))
@@ -102,7 +102,7 @@ namespace example
       }
       if (ImGui::BeginMenu("Help"))
       {
-        ShowMenuHelp();
+        ShowMenuHelp(show_app_about);
         ImGui::EndMenu();
       }
       ImGui::EndMainMenuBar();
@@ -176,7 +176,7 @@ namespace example
     if (ImGui::MenuItem("Workflow")) {}
   }
 
-  static void ShowMenuView()
+  static void ShowMenuView(bool& show_sequence_progress)
   {
     ImGui::MenuItem("Main menu", NULL, false, false);
     ImGui::MenuItem("Sequence", NULL, &show_sequence_progress);
@@ -206,20 +206,20 @@ namespace example
     if (ImGui::MenuItem("Sample groups")) {}
     if (ImGui::MenuItem("Workflow wizard")) {}
     if (ImGui::MenuItem("Quick info"))
-    {
-    if (ImGui::MenuItem("Sequence")) {}
-    if (ImGui::MenuItem("Transitions")) {}
-    if (ImGui::MenuItem("Quant Method")) {}
-    if (ImGui::MenuItem("Standards Conc")) {}
-    if (ImGui::MenuItem("Comp Filters")) {}
-    if (ImGui::MenuItem("Comp Group Filters")) {}
-    if (ImGui::MenuItem("Comp QCs")) {}
-    if (ImGui::MenuItem("Comp Group QCs")) {}
-    if (ImGui::MenuItem("Parameters")) {}
-    ImGui::EndMenu();
+    { // TODO: bug
+        if (ImGui::MenuItem("Sequence")) {}
+        if (ImGui::MenuItem("Transitions")) {}
+        if (ImGui::MenuItem("Quant Method")) {}
+        if (ImGui::MenuItem("Standards Conc")) {}
+        if (ImGui::MenuItem("Comp Filters")) {}
+        if (ImGui::MenuItem("Comp Group Filters")) {}
+        if (ImGui::MenuItem("Comp QCs")) {}
+        if (ImGui::MenuItem("Comp Group QCs")) {}
+        if (ImGui::MenuItem("Parameters")) {}
+        ImGui::EndMenu();
     }
     if (ImGui::MenuItem("Integrity checks"))
-    {
+    {  // TODO: bug
     if (ImGui::MenuItem("Sample consistency")) {}
     if (ImGui::MenuItem("Comp consistency")) {}
     if (ImGui::MenuItem("Comp Group consistency")) {}
@@ -227,14 +227,14 @@ namespace example
     ImGui::EndMenu();
     }
     if (ImGui::MenuItem("Report"))
-    {
+    {  // TODO: bug
     if (ImGui::MenuItem("Feature summary")) {}
     if (ImGui::MenuItem("Sequence summary")) {}
     ImGui::EndMenu();
     }
   }
 
-  static void ShowMenuHelp()
+  static void ShowMenuHelp(bool& show_app_about)
   {
     ImGui::MenuItem("Main menu", NULL, false, false);
     ImGui::MenuItem("About", NULL, &show_app_about);

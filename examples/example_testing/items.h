@@ -32,7 +32,7 @@ namespace example
   static void ShowMenuHelp(bool& show_app_about);
   static void SequenceProgressWidget(bool* p_open);
   static void TableWidget(bool* p_open);
-  static void TableFilterPopup(const char* popuop_id, ImGuiTextFilter&, std::vector<std::string>& column, bool* checked);
+  static void TableFilterPopup(const char* popuop_id, ImGuiTextFilter& filter, std::vector<std::string>& column, bool* checked);
   static void FileBrowserWidget(bool* p_open);  
   static void PlotWidget(bool* p_open); 
   static void WorkflowWidget(bool* p_open);

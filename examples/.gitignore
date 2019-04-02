@@ -18,6 +18,7 @@ build/*
 *.suo
 *.VC.db
 *.VC.VC.opendb
+.vs/
 
 ## Xcode cruft
 .DS_Store

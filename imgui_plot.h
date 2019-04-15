@@ -189,9 +189,12 @@ namespace ImGui
             // Tick major
             const ImVec2 tick_size = CalcTextSize(properties_.axis_title, NULL, true);
 
-            Ta tick_value = axis_tick_min;
-            while (tick_value <= axis_tick_max)
+            const Ta span = axis_tick_max - axis_tick_min;
+            const int tick_count = std::max<int>(1, std::ceil(span / axis_tick_span));
+
+            for (int i = 0; i < tick_count; ++i)
             {
+                const Ta tick_value = axis_tick_min + i * axis_tick_span;
                 // Tick label
                 char tick_label[64];
                 sprintf(tick_label, properties_.axis_tick_format, tick_value);
@@ -207,8 +210,6 @@ namespace ImGui
                     ImVec2 tick_pos = ImVec2(figure.GetScalesX()->Scale(tick_value), figure.GetScalesY()->GetRangeMin() + tick_size.y); // interpolate the position
                     window->DrawList->AddText(properties_.axis_tick_font, properties_.axis_tick_font_size, tick_pos, properties_.axis_font_col, tick_label);
                 }
-
-                tick_value += axis_tick_span;
             }
 
             _DrawXAxisAxis(figure, orientation);
@@ -321,9 +322,13 @@ namespace ImGui
             // Tick major
             const ImVec2 tick_size = CalcTextSize(properties_.axis_title, NULL, true);
 
-            Tb tick_value = axis_tick_min;
-            while (tick_value <= axis_tick_max)
+
+            const Ta span = axis_tick_max - axis_tick_min;
+            const int tick_count = std::max<int>(1, std::ceil(span / axis_tick_span));
+
+            for (int i = 0; i < tick_count; ++i)
             {
+                const Ta tick_value = axis_tick_min + i * axis_tick_span;
                 // Tick label
                 char tick_label[64];
                 sprintf(tick_label, properties_.axis_tick_format, tick_value);
@@ -339,8 +344,6 @@ namespace ImGui
                     ImVec2 tick_pos = ImVec2(figure.GetScalesX()->GetRangeMax() + tick_size.y, figure.GetScalesY()->Scale(tick_value)); // interpolate the position
                     window->DrawList->AddText(properties_.axis_tick_font, properties_.axis_tick_font_size, tick_pos, properties_.axis_font_col, tick_label);
                 }
-
-                tick_value += axis_tick_span;
             }
 
             _DrawYAxisAxis(figure, orientation);
@@ -447,14 +450,15 @@ namespace ImGui
             if (window->SkipItems)
                 return;
 
-            Ta tick_value = axis_tick_min;
-            while (tick_value <= axis_tick_max)
+            const Ta span = axis_tick_max - axis_tick_min;
+            const int tick_count = std::max<int>(1, std::ceil(span / axis_tick_span));
+
+            for (int i = 0; i < tick_count; ++i)
             {
+                const Ta tick_value = axis_tick_min + i * axis_tick_span;
                 window->DrawList->AddLine(ImVec2(figure.GetScalesX()->Scale(tick_value), figure.GetScalesY()->GetRangeMax()),
                     ImVec2(figure.GetScalesX()->Scale(tick_value), figure.GetScalesY()->GetRangeMin()),
                     properties_.grid_lines_col, properties_.grid_lines_thickness);
-
-                tick_value += axis_tick_span;
             }
         };
 
@@ -471,14 +475,15 @@ namespace ImGui
             if (window->SkipItems)
                 return;
 
-            Tb tick_value = axis_tick_min;
-            while (tick_value <= axis_tick_max)
+            const Ta span = axis_tick_max - axis_tick_min;
+            const int tick_count = std::max<int>(1, std::ceil(span / axis_tick_span));
+
+            for (int i = 0; i < tick_count; ++i)
             {
+                const Ta tick_value = axis_tick_min + i * axis_tick_span;
                 window->DrawList->AddLine(ImVec2(figure.GetScalesX()->GetRangeMin(), figure.GetScalesY()->Scale(tick_value)),
                     ImVec2(figure.GetScalesX()->GetRangeMax(), figure.GetScalesY()->Scale(tick_value)),
                     properties_.grid_lines_col, properties_.grid_lines_thickness);
-
-                tick_value += axis_tick_span;
             }
         };
 
@@ -490,7 +495,7 @@ namespace ImGui
 
     // ## Plot legends and other features
     struct ImColorBarProperties
-    {        
+    {
         const char* cbar_font_format = "%s"; ///< string format
         ImFont* cbar_font = NULL; ///< Font type for color bar labels
         float cbar_font_size = 0.0f; ///< Font size of the color bar labels
@@ -557,7 +562,7 @@ namespace ImGui
                         ImVec2(legend_pos.x + width + text_spacing, legend_pos.y + start_y_pos + text_spacing),
                         properties_.cbar_font_col, series_text);
 
-                }   
+                }
             } else if (!strcmp(orientation, "Horizontal")){
                 for (int n=0; n<n_series; ++n)
                 {
@@ -576,8 +581,8 @@ namespace ImGui
                         ImVec2(legend_pos.x + start_x_pos + text_spacing, legend_pos.y + width + text_spacing),
                         properties_.cbar_font_col, series_text);
 
-                }   
-            }         
+                }
+            }
         }
 
         void SetProperties(ImColorBarProperties& properties){properties_ = properties;}
@@ -908,6 +913,41 @@ namespace ImGui
             }
         };
 
+        void DrawMarkers(ImPlot<Ta, Tb>& figure,
+                         const std::function<void(int idx, Ta& x_data, Tb& y_data, float& r_data)>& data_callback, const int& n_data,
+                         const char* series)
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            ImGuiContext& g = *GImGui;
+
+            for (int n = 0; n < n_data; ++n)
+            {
+                Ta x_data;
+                Tb y_data;
+                float r_data;
+
+                data_callback(n, x_data, y_data, r_data);
+
+                // Points
+                const float centre_scaled_x = figure.GetScalesX()->Scale(x_data);
+                const float centre_scaled_y = figure.GetScalesY()->Scale(y_data);
+                window->DrawList->AddCircleFilled(ImVec2(centre_scaled_x, centre_scaled_y), r_data, properties_.marker_fill_col, 12);
+
+                // Tooltip on hover
+                if (centre_scaled_x - r_data <= g.IO.MousePos.x &&
+                    centre_scaled_x + r_data >= g.IO.MousePos.x &&
+                    centre_scaled_y - r_data <= g.IO.MousePos.y &&
+                    centre_scaled_y + r_data >= g.IO.MousePos.y)
+                {
+                    SetTooltip("%s\n%s: %8.4g\n%s: %8.4g", series, "x", x_data, "y", y_data);
+                    window->DrawList->AddCircleFilled(ImVec2(centre_scaled_x, centre_scaled_y), r_data, properties_.marker_hovered_col, 12);
+                }
+            }
+        };
+
         void SetProperties(ImMarkerProperties& properties){properties_ = properties;}
     private:
         ImMarkerProperties properties_;
@@ -957,6 +997,39 @@ namespace ImGui
                 {
                     // TODO
                 }
+            }
+        };
+
+        void DrawLines(ImPlot<Ta, Tb>& figure,
+                       const std::function<void(int idx, Ta& x_data, Tb& y_data)>& data_callback, const int& n_data)
+        {
+            ImGuiWindow* window = GetCurrentWindow();
+            if (window->SkipItems)
+                return;
+
+            Ta x_data_prev;
+            Tb y_data_prev;
+
+            for (int n = 0; n < n_data; ++n)
+            {
+                Ta x_data;
+                Tb y_data;
+                data_callback(n, x_data, y_data);
+
+                // Line
+                if (n > 0 && strcmp(properties_.line_interp, "None") == 0)
+                {
+                    window->DrawList->AddLine(
+                            ImVec2(figure.GetScalesX()->Scale(x_data_prev), figure.GetScalesY()->Scale(y_data_prev)),
+                            ImVec2(figure.GetScalesX()->Scale(x_data), figure.GetScalesY()->Scale(y_data)),
+                            properties_.line_stroke_col, properties_.line_stroke_width);
+                }
+                else if (n > 0 && strcmp(properties_.line_interp, "Bezier") == 0)
+                {
+                    // TODO
+                }
+                x_data_prev = x_data;
+                y_data_prev = y_data;
             }
         };
 
@@ -1149,7 +1222,7 @@ namespace ImGui
     {
         //float cell_size = 2.0f; ///< width/height of each cell (Not used currently)
         ImU32 cell_stroke_col = 0;  ///< heatmap stroke color
-        ImU32 cell_hovered_col = 0;  ///< heatmap hover color 
+        ImU32 cell_hovered_col = 0;  ///< heatmap hover color
         float cell_stroke_width = 1.0f;  ///< heatmap stroke width
         float cell_spacing = 0.1f;  ///< as a percentage of cell size
     };
@@ -1160,7 +1233,7 @@ namespace ImGui
     public:
         /**
         * @brief Draw Heatmap
-        * 
+        *
         * @param figure The figure to draw on
         * @param x_data X axis indices
         * @param y_data Y axis indices
@@ -1223,7 +1296,7 @@ namespace ImGui
         ImU32 whiskers_stroke_col = 0;
         float whiskers_stroke_width = 0;
         ImU32 caps_stroke_col = 0;
-        float caps_stroke_width = 0;		
+        float caps_stroke_width = 0;
     };
 
     template<typename Ta, typename Tb>
@@ -1410,10 +1483,10 @@ namespace ImGui
 
                 // // line 1
                 // const ImVec2 vec_line_start = ImVec2(
-                //     ImCos(x_data_prev_rad)*properties_.inner_radius + centre.x, 
+                //     ImCos(x_data_prev_rad)*properties_.inner_radius + centre.x,
                 //     ImSin(x_data_prev_rad)*properties_.inner_radius + centre.y);
                 // const ImVec2 vec_line_end = ImVec2(
-                //     ImCos(x_data_prev_rad)*properties_.outer_radius + centre.x, 
+                //     ImCos(x_data_prev_rad)*properties_.outer_radius + centre.x,
                 //     ImSin(x_data_prev_rad)*properties_.outer_radius + centre.y);
 
                 // start: end of the outer arc.  end: start of the inner arc
@@ -1430,9 +1503,9 @@ namespace ImGui
                 // window->DrawList->AddLine(vec_line_start, vec_line_end, ImGui::ColorConvertFloat4ToU32(ImVec4(255.0f, 255.0f, 255.0f, 255.0f)));
                 window->DrawList->PathArcTo(centre, properties_.outer_radius, x_data_prev_rad, x_data_rad, n_segments);  // outer arc
                 window->DrawList->PathLineTo(vec1);  // start outer to inner arc line
-                window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_rad, x_data_prev_rad, n_segments);  // inner arc 
+                window->DrawList->PathArcTo(centre, properties_.inner_radius, x_data_rad, x_data_prev_rad, n_segments);  // inner arc
                 window->DrawList->PathLineTo(vec2);  // end inner arc to outer arc line
-                window->DrawList->PathFillConvex(colors[n]);             
+                window->DrawList->PathFillConvex(colors[n]);
 
                 // draw the tooltip
                 // [BUG: there appears to be a "gap" in the convex hull...]
